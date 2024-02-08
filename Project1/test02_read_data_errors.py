@@ -1,9 +1,9 @@
-'''test02_read_data_errors.py
+"""test02_read_data_errors.py
 Test Data class error handling
 CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver Layton, Caitrin Eaton, Hannah Wolfe, Stephanie Taylor
-'''
+"""
 import numpy as np
 
 from data import Data

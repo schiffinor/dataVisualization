@@ -1,9 +1,9 @@
-'''test01_read_numeric_data.py
+"""test01_read_numeric_data.py
 Test `Data` class constructor and `read` method with a focus on numeric data
 CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver Layton, Caitrin Eaton, Hannen Wolfe, Stephanie Taylor
-'''
+"""
 import numpy as np
 
 from data import Data

@@ -1,9 +1,9 @@
-'''test03_read_cat_data.py
+"""test03_read_cat_data.py
 Test `Data` class constructor and `read` method with a focus on categorical data
 CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver W. Layton
-'''
+"""
 import numpy as np
 
 from data import Data

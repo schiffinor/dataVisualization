@@ -1,17 +1,20 @@
 """
 data.py
 Reads CSV files, stores data, access/filter data by variable name
-YOUR NAME HERE
-CS 251/2: Data Analysis and Visualization
+Roman Schiffino
+CS 251: Data Analysis and Visualization
 Spring 2024
 """
 
 
 class Data:
-    '''Represents data read in from .csv files
-    '''
+    """
+    Represents data read in from .csv files
+    """
+
     def __init__(self, filepath=None, headers=None, data=None, header2col=None, cats2levels=None):
-        '''Data object constructor
+        """
+        Data object constructor
 
         Parameters:
         -----------
@@ -50,11 +53,21 @@ class Data:
             - cats2levels
             - Any others you find helpful in your implementation
         - If `filepath` isn't None, call the `read` method.
-        '''
-        pass
+        """
+
+        self.file = None
+        self.filepath = None
+        self.headers = None if headers is None else headers
+        self.data = None if data is None else data
+        self.header2col = None if header2col is None else header2col
+        self.cats2levels = None if cats2levels is None else cats2levels
+
+        if filepath is not None:
+            self.read(filepath)
 
     def read(self, filepath):
-        '''Read in the .csv file `filepath` in 2D tabular format. Convert to numpy ndarray called `self.data` at the end
+        """
+        Read in the .csv file `filepath` in 2D tabular format. Convert to numpy ndarray called `self.data` at the end
         (think of this as a 2D array or table).
 
         Format of `self.data`:
@@ -118,11 +131,39 @@ class Data:
         - It might be helpful to implement support for only numeric data first, test it, then add support for categorical
         variable types afterward.
         - Make use of code from Lab 1a!
-        '''
+        """
+        if filepath is not None and len(filepath) != 0:
+            if self.filepath != filepath:
+                self.filepath = filepath
+            else:
+                print("Filepath is already set to {}".format(self.filepath))
+                print("Re-reading data from {}".format(self.filepath))
+            try:
+                self.file = open(self.filepath, 'r')
+                print("Reading data from file: {}".format(self.filepath))
+            except OSError as e:
+                print("Could not open file: {}".format(self.filepath))
+                raise RuntimeError(e.strerror)
+            raw_file_lines = self.file.readlines()
+            file_lines = []
+            for raw_line in raw_file_lines:
+                line = raw_line.strip("\n")
+                file_lines.append(line)
+            raw_headers = file_lines[0].split(',')
+            headers = []
+            for raw_var_name in raw_headers:
+                var_name = raw_var_name.strip()
+                headers.append(var_name)
+
+            self.headers = headers
+
+            print("Headers: {}".format(self.headers))
+
+
         pass
 
     def __str__(self):
-        '''toString method
+        """toString method
 
         (For those who don't know, __str__ works like toString in Java...In this case, it's what's called to determine
         what gets shown when a `Data` object is printed.)
@@ -135,65 +176,65 @@ class Data:
 
         NOTE: It is fine to print out int-coded categorical variables (no extra work compared to printing out numeric data).
         Printing out the categorical variables with string levels would be a small extension.
-        '''
+        """
         pass
 
     def get_headers(self):
-        '''Get list of header names (all variables)
+        """Get list of header names (all variables)
 
         Returns:
         -----------
         Python list of str.
-        '''
+        """
         pass
 
     def get_mappings(self):
-        '''Get method for mapping between variable name and column index
+        """Get method for mapping between variable name and column index
 
         Returns:
         -----------
         Python dictionary. str -> int
-        '''
+        """
         pass
 
     def get_cat_level_mappings(self):
-        '''Get method for mapping between categorical variable names and a list of the respective unique level strings.
+        """Get method for mapping between categorical variable names and a list of the respective unique level strings.
 
         Returns:
         -----------
         Python dictionary. str -> list of str
-        '''
+        """
         pass
 
     def get_num_dims(self):
-        '''Get method for number of dimensions in each data sample
+        """Get method for number of dimensions in each data sample
 
         Returns:
         -----------
         int. Number of dimensions in each data sample. Same thing as number of variables.
-        '''
+        """
         pass
 
     def get_num_samples(self):
-        '''Get method for number of data points (samples) in the dataset
+        """Get method for number of data points (samples) in the dataset
 
         Returns:
         -----------
         int. Number of data samples in dataset.
-        '''
+        """
         pass
 
     def get_sample(self, rowInd):
-        '''Gets the data sample at index `rowInd` (the `rowInd`-th sample)
+        """Gets the data sample at index `rowInd` (the `rowInd`-th sample)
 
         Returns:
         -----------
         ndarray. shape=(num_vars,) The data sample at index `rowInd`
-        '''
+        """
         pass
 
     def get_header_indices(self, headers):
-        '''Gets the variable (column) indices of the str variable names in `headers`.
+        """Gets the variable (column) indices of the str variable names in `headers`.
 
         Parameters:
         -----------
@@ -202,11 +243,11 @@ class Data:
         Returns:
         -----------
         Python list of nonnegative ints. shape=len(headers). The indices of the headers in `headers` list.
-        '''
+        """
         pass
 
     def get_all_data(self):
-        '''Gets a copy of the entire dataset
+        """Gets a copy of the entire dataset
 
         (Week 2)
 
@@ -215,43 +256,43 @@ class Data:
         ndarray. shape=(num_data_samps, num_vars). A copy of the entire dataset.
             NOTE: This should be a COPY, not the data stored here itself. This can be accomplished with numpy's copy
             function.
-        '''
+        """
         pass
 
     def head(self):
-        '''Return the 1st five data samples (all variables)
+        """Return the 1st five data samples (all variables)
 
         (Week 2)
 
         Returns:
         -----------
         ndarray. shape=(5, num_vars). 1st five data samples.
-        '''
+        """
         pass
 
     def tail(self):
-        '''Return the last five data samples (all variables)
+        """Return the last five data samples (all variables)
 
         (Week 2)
 
         Returns:
         -----------
         ndarray. shape=(5, num_vars). Last five data samples.
-        '''
+        """
         pass
 
     def limit_samples(self, start_row, end_row):
-        '''Update the data so that this `Data` object only stores samples in the contiguous range:
+        """Update the data so that this `Data` object only stores samples in the contiguous range:
             `start_row` (inclusive), end_row (exclusive)
         Samples outside the specified range are no longer stored.
 
         (Week 2)
 
-        '''
+        """
         pass
 
     def select_data(self, headers, rows=[]):
-        '''Return data samples corresponding to the variable names in `headers`.
+        """Return data samples corresponding to the variable names in `headers`.
         If `rows` is empty, return all samples, otherwise return samples at the indices specified by the `rows` list.
 
         (Week 2)
@@ -271,5 +312,5 @@ class Data:
             Subset of data from the variables `headers` that have row indices `rows`.
 
         Hint: For selecting a subset of rows from the data ndarray, check out np.ix_
-        '''
+        """
         pass

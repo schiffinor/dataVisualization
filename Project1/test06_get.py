@@ -1,9 +1,9 @@
-'''test06_get.py
+"""test06_get.py
 Test Data class get methods
 CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver Layton, Caitrin Eaton, Hannah Wolfe, Stephanie Taylor
-'''
+"""
 import numpy as np
 
 from data import Data

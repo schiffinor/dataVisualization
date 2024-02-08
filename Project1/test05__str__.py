@@ -1,9 +1,9 @@
-'''test05__str__.py
+"""test05__str__.py
 Test Data class __str__ method for printing `Data` objects
 CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver Layton, Caitrin Eaton, Hannah Wolfe, Stephanie Taylor
-'''
+"""
 import numpy as np
 
 from data import Data
