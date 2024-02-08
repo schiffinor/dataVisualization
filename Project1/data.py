@@ -1,9 +1,10 @@
-'''data.py
+"""
+data.py
 Reads CSV files, stores data, access/filter data by variable name
 YOUR NAME HERE
 CS 251/2: Data Analysis and Visualization
 Spring 2024
-'''
+"""
 
 
 class Data:
