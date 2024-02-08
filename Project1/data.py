@@ -5,6 +5,13 @@ Roman Schiffino
 CS 251: Data Analysis and Visualization
 Spring 2024
 """
+import numbers
+
+import numpy as np
+import dateutil.parser as dParse
+
+from dataTypes import DataTypes as dT
+import matrix as m
 
 
 class Data:
@@ -58,9 +65,12 @@ class Data:
         self.file = None
         self.filepath = None
         self.headers = None if headers is None else headers
+        self.var_data_type = None
+        self.data_array = None
         self.data = None if data is None else data
         self.header2col = None if header2col is None else header2col
-        self.cats2levels = None if cats2levels is None else cats2levels
+        self.col2header = None if header2col is None else dict(zip(header2col.values(), header2col.keys()))
+        self.cats2levels = {} if cats2levels is None else cats2levels
 
         if filepath is not None:
             self.read(filepath)
@@ -149,15 +159,86 @@ class Data:
             for raw_line in raw_file_lines:
                 line = raw_line.strip("\n")
                 file_lines.append(line)
+
+
             raw_headers = file_lines[0].split(',')
             headers = []
             for raw_var_name in raw_headers:
                 var_name = raw_var_name.strip()
                 headers.append(var_name)
-
             self.headers = headers
-
             print("Headers: {}".format(self.headers))
+
+            self.header2col = dict(zip(self.headers, range(len(self.headers))))
+            self.col2header = dict(zip(range(len(self.headers)), self.headers))
+            raw_data_types = file_lines[1].split(',')
+            data_types = []
+            for raw_data_type in raw_data_types:
+                data_type = raw_data_type.strip()
+                print("Data type: {}".format(data_type))
+                if data_type not in dT.member_names_:
+                    raise ValueError("Invalid data type: {}".format(data_type))
+                data_types.append(dT[data_type])
+            self.var_data_type = data_types
+            print("Data types: {}".format(self.var_data_type))
+            print("Data types: {}".format(list(map(lambda var: var.name, self.var_data_type))))
+            for index, datum in enumerate(self.var_data_type):
+                if datum.name == "categorical":
+                    self.cats2levels[headers[index]] = []
+            self.data_array = m.Matrix(0, len(headers))
+            for row_index, line in enumerate(file_lines[2:]):
+                raw_data = line.split(',')
+                data = []
+                for index, raw_datum in enumerate(raw_data):
+                    datum = raw_datum.strip() if self.var_data_type[index].name != "string" else raw_datum
+                    if datum == "":
+                        if self.var_data_type[index].name == "numeric":
+                            data.append(np.nan)
+                        elif self.var_data_type[index].name == "categorical":
+                            category = "Missing"
+                            data.append(category)
+                            if category not in self.cats2levels[self.col2header[index]]:
+                                self.cats2levels[self.col2header[index]].append(category)
+                        elif self.var_data_type[index].name == "string":
+                            data.append(datum)
+                        elif self.var_data_type[index].name == "date":
+                            data.append("N/A")
+                        elif self.var_data_type[index].name == "missing":
+                            raise ValueError("Invalid data type: {}".format(self.var_data_type[index]))
+                        else:
+                            raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
+                    else:
+                        if self.var_data_type[index].name == "numeric":
+                            try:
+                                number = float(datum)
+                            except OverflowError:
+                                number = float("inf")
+                                raise RuntimeError("Overflow Error: {} is too large.".format(datum))
+                            except ValueError:
+                                number = np.nan
+                                raise RuntimeError("Data Error: {} is not a number.".format(datum))
+                            data.append(number)
+                        elif self.var_data_type[index].name == "categorical":
+                            data.append(datum)
+                            if datum not in self.cats2levels[self.col2header[index]]:
+                                self.cats2levels[self.col2header[index]].append(datum)
+                        elif self.var_data_type[index].name == "string":
+                            data.append(datum)
+                        elif self.var_data_type[index].name == "date":
+                            try:
+                                date = dParse.parse(datum)
+                            except dParse.ParserError:
+                                date = "N/A"
+                            data.append(date)
+                        elif self.var_data_type[index].name == "missing":
+                            raise ValueError("Invalid data type: {}".format(self.var_data_type[index]))
+                        else:
+                            raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
+                self.data_array = self.data_array.d_append(m.Matrix(1, len(data)))
+                self.data_array.set_row(row_index, data)
+
+        print("Data: \n{}".format(self.data_array))
+        self.data = self.data_array.to_numpy()
 
 
         pass
