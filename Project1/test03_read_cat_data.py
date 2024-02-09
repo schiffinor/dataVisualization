@@ -32,6 +32,7 @@ def _read_iris_common(iris_data):
     print(f"Your iris categorical variable name-to-level mapping is\n  {iris_data.cats2levels}\nand should be\n  {{'species': ['setosa', 'versicolor', 'virginica']}}\n")
     print(f'Your data is a ndarray? {isinstance(iris_data.data, np.ndarray)}')
     print(f'Your data has {iris_data.data.shape[0]} samples and {iris_data.data.shape[1]} variables/dimensions.\nIt should have 150 samples and 5 variables/dimensions.')
+    print(iris_data)
 
     non_numeric = [val for val in iris_data.data.flatten() if isinstance(val, str)]
     if len(non_numeric) > 0:

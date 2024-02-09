@@ -12,10 +12,13 @@ def read_data_constructor(iris_filename):
     iris_data = Data(iris_filename)
 
     print(f'Your file path is:\n  {iris_data.filepath}\nand should be:\n  data/iris_no_species.csv\n')
-    print(f"Your iris headers are\n  {iris_data.headers}\nand should be\n  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']\n")
-    print(f"Your iris variable name-to-column mapping is\n  {iris_data.header2col}\nand should be\n  {{'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3}}\n")
+    print(
+        f"Your iris headers are\n  {iris_data.headers}\nand should be\n  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']\n")
+    print(
+        f"Your iris variable name-to-column mapping is\n  {iris_data.header2col}\nand should be\n  {{'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3}}\n")
     print(f'Your data is a ndarray? {isinstance(iris_data.data, np.ndarray)}')
-    print(f'Your data has {iris_data.data.shape[0]} samples and {iris_data.data.shape[1]} variables/dimensions.\nIt should have 150 samples and 4 variables/dimensions.')
+    print(
+        f'Your data has {iris_data.data.shape[0]} samples and {iris_data.data.shape[1]} variables/dimensions.\nIt should have 150 samples and 4 variables/dimensions.')
 
 
 def read_data_separately(iris_filename):
@@ -27,10 +30,13 @@ def read_data_separately(iris_filename):
 
     print('After calling read...')
     print(f'Your file path is:\n  {iris_data.filepath} and should be:\n  data/iris_no_species.csv\n')
-    print(f"Your iris headers are\n  {iris_data.headers}\nand should be\n  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']\n")
-    print(f"Your iris variable name-to-column mapping is\n  {iris_data.header2col}\nand should be\n  {{'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3}}\n")
+    print(
+        f"Your iris headers are\n  {iris_data.headers}\nand should be\n  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']\n")
+    print(
+        f"Your iris variable name-to-column mapping is\n  {iris_data.header2col}\nand should be\n  {{'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3}}\n")
     print(f'Your data is a ndarray? {isinstance(iris_data.data, np.ndarray)}')
-    print(f'Your data has {iris_data.data.shape[0]} samples and {iris_data.data.shape[1]} variables/dimensions.\nIt should have 150 samples and 4 variables/dimensions.')
+    print(
+        f'Your data has {iris_data.data.shape[0]} samples and {iris_data.data.shape[1]} variables/dimensions.\nIt should have 150 samples and 4 variables/dimensions.')
 
 
 def read_data_spaces(test_filename):

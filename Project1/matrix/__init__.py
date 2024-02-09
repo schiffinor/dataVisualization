@@ -37,6 +37,8 @@ class Matrix:
         if data is not None:
             # Passes data to make matrix.
             self.load = data
+            self.rows = len(data)
+            self.columns = len(data[0])
 
     def __str__(self):
         """
@@ -69,7 +71,7 @@ class Matrix:
         """
         Returns value of matrix at row x, column y.
         """
-        return self.columns()[y]
+        return self.column_set()[y]
 
     def set(self, x, y, val):
         """
@@ -92,7 +94,7 @@ class Matrix:
         """
         Sets value of matrix at column y to value list.
         """
-        if y >= self.columns():
+        if y >= self.columns:
             raise ValueError("column index out of range")
         if len(val_list) != self.rows():
             raise ValueError("length of value list does not match number of rows")
@@ -189,7 +191,7 @@ class Matrix:
         return False
 
 
-    def rows(self):
+    def row_set(self):
         return self.load
 
 
@@ -205,4 +207,6 @@ class Matrix:
 
     def to_numpy(self):
         print(self.column_set())
-        return np.ndarray(self.column_set())
+        output = np.array(self.load)
+        output.dtype
+        return output

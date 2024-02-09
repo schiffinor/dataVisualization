@@ -11,6 +11,7 @@ import numpy as np
 import dateutil.parser as dParse
 
 from dataTypes import DataTypes as dT
+from dataTypesTrim import DataTypes as dTT
 import matrix as m
 
 
@@ -19,7 +20,7 @@ class Data:
     Represents data read in from .csv files
     """
 
-    def __init__(self, filepath=None, headers=None, data=None, header2col=None, cats2levels=None):
+    def __init__(self, filepath=None, headers=None, data=None, header2col=None, cats2levels=None, allDataTypes=False, compatMode=False):
         """
         Data object constructor
 
@@ -61,16 +62,25 @@ class Data:
             - Any others you find helpful in your implementation
         - If `filepath` isn't None, call the `read` method.
         """
-
         self.file = None
         self.filepath = None
-        self.headers = None if headers is None else headers
+        self.headers = headers
+        self.whole_headers = None
         self.var_data_type = None
         self.data_array = None
-        self.data = None if data is None else data
-        self.header2col = None if header2col is None else header2col
+        self.whole_data_array = None
+        self.data = data
+        self.header2col = header2col
+        self.whole_header2col = None
         self.col2header = None if header2col is None else dict(zip(header2col.values(), header2col.keys()))
+        self.whole_col2header = None
         self.cats2levels = {} if cats2levels is None else cats2levels
+        self.cats2level_dicts = {} if cats2levels is None else None
+        self.levels2cats = {} if cats2levels is None else cats2levels
+        self.levels2cats_dicts = {} if cats2levels is None else None
+        self.allDataTypes = allDataTypes
+        self.dTRef = dT if allDataTypes else dTT
+        self.compatMode = compatMode
 
         if filepath is not None:
             self.read(filepath)
@@ -93,43 +103,6 @@ class Data:
         None. (No return value).
             NOTE: In the future, the Returns section will be omitted from docstrings if there should be nothing returned
 
-        TODO:
-        1. Set or update your `filepath` instance variable based on the parameter value.
-        2. Open and read in the .csv file `filepath` to set `self.data`.
-        Parse the file to ONLY store numeric and categorical columns of data in a 2D tabular format (ignore all other
-        potential variable types).
-            - Numeric data: Store all values as floats.
-            - Categorical data: Store values as ints in your list of lists (self.data). Maintain the mapping between the
-            int-based and string-based coding of categorical levels in the self.cats2levels dictionary.
-        All numeric and categorical values should be added to the SAME list of lists (self.data).
-        3. Represent `self.data` (after parsing your CSV file) as an numpy ndarray. To do this:
-            - At the top of this file write: import numpy as np
-            - Add this code before this method ends: self.data = np.array(self.data)
-        4. Be sure to set the fields: `self.headers`, `self.data`, `self.header2col`, `self.cats2levels`.
-        5. Add support for missing data. This arises with there is no entry in a CSV file between adjacent commas.
-            For example:
-                    letter,number,greeting
-                    categorical,categorical,categorical
-                     a,1,hi
-                     b,,hi
-                     c,,hi
-            contains two missing values, in the 4th and 5th rows of the 2nd column.
-            Handle this differently depending on whether the missing value belongs to a numeric or categorical variable.
-            In both cases, you should subsitute a single constant value for the current value to your list of lists (self.data):
-            - Numeric data: Subsitute np.nan for the missing value.
-            (nan stands for "not a number" — this is a special constant value provided by Numpy).
-            - Categorical data: Add a categorical level called 'Missing' to the list of levels in self.cats2levels
-            associated with the current categorical variable that has the missing value. Now proceed as if the level
-            'Missing' actually appeared in the CSV file and make the current entry in your data list of lists (self.data)
-            the INT representing the index (position) of 'Missing' in the level list.
-            For example, in the above CSV file example, self.data should look like:
-                [[0, 0, 0],
-                 [1, 1, 0],
-                 [2, 1, 0]]
-            and self.cats2levels would look like:
-                self.cats2levels['letter'] -> ['a', 'b', 'c']
-                self.cats2levels['number'] -> ['1', 'Missing']
-                self.cats2levels['greeting'] -> ['hi']
 
         NOTE:
         - In any CS251 project, you are welcome to create as many helper methods as you'd like. The crucial thing is to
@@ -166,26 +139,34 @@ class Data:
             for raw_var_name in raw_headers:
                 var_name = raw_var_name.strip()
                 headers.append(var_name)
-            self.headers = headers
-            print("Headers: {}".format(self.headers))
+            self.whole_headers = headers
+            # print("Headers: {}".format(self.headers))
 
-            self.header2col = dict(zip(self.headers, range(len(self.headers))))
-            self.col2header = dict(zip(range(len(self.headers)), self.headers))
+            self.whole_header2col = dict(zip(self.whole_headers, range(len(self.whole_headers))))
+            self.whole_col2header = dict(zip(range(len(self.whole_headers)), self.whole_headers))
             raw_data_types = file_lines[1].split(',')
             data_types = []
-            for raw_data_type in raw_data_types:
+            for index, raw_data_type in enumerate(raw_data_types):
                 data_type = raw_data_type.strip()
-                print("Data type: {}".format(data_type))
-                if data_type not in dT.member_names_:
-                    raise ValueError("Invalid data type: {}".format(data_type))
-                data_types.append(dT[data_type])
+                # print("Data type: {}".format(data_type))
+                if data_type not in self.dTRef.member_names_:
+                    print("Invalid data type: {}\nIgnoring Column.\n".format(data_type))
+                    data_types.append(self.dTRef["missing"])
+                else:
+                    data_types.append(self.dTRef[data_type])
             self.var_data_type = data_types
-            print("Data types: {}".format(self.var_data_type))
-            print("Data types: {}".format(list(map(lambda var: var.name, self.var_data_type))))
+            if all(d_type.name == "missing" for d_type in self.var_data_type) and len(self.var_data_type) > 0 and not self.compatMode:
+                raise ValueError("All data types invalid.\n"
+                                 "Input file likely missing data types.\n"
+                                 "Second line must list data types."
+                                 "Second line processed: {}".format(file_lines[1]))
+            # print("Data types: {}".format(self.var_data_type))
+            # print("Data types: {}".format(list(map(lambda var: var.name, self.var_data_type))))
             for index, datum in enumerate(self.var_data_type):
                 if datum.name == "categorical":
-                    self.cats2levels[headers[index]] = []
-            self.data_array = m.Matrix(0, len(headers))
+                    self.cats2levels[self.whole_headers[index]] = []
+                    self.cats2level_dicts[self.whole_headers[index]] = {}
+            self.whole_data_array = m.Matrix(0, len(headers))
             for row_index, line in enumerate(file_lines[2:]):
                 raw_data = line.split(',')
                 data = []
@@ -196,15 +177,21 @@ class Data:
                             data.append(np.nan)
                         elif self.var_data_type[index].name == "categorical":
                             category = "Missing"
-                            data.append(category)
-                            if category not in self.cats2levels[self.col2header[index]]:
-                                self.cats2levels[self.col2header[index]].append(category)
+                            temp_header = self.whole_col2header[index]
+                            temp_list = self.cats2levels[temp_header]
+                            temp_dict = self.cats2level_dicts[temp_header]
+                            if category not in temp_list:
+                                temp_list.append(category)
+                                temp_dict = self.cats2level_dicts[temp_header] = \
+                                    (dict(zip(temp_list, range(len(temp_list)))))
+                                self.levels2cats_dicts[temp_header] = dict(zip(range(len(temp_list)), temp_list))
+                            data.append(temp_dict[category])
                         elif self.var_data_type[index].name == "string":
                             data.append(datum)
                         elif self.var_data_type[index].name == "date":
                             data.append("N/A")
                         elif self.var_data_type[index].name == "missing":
-                            raise ValueError("Invalid data type: {}".format(self.var_data_type[index]))
+                            data.append(datum)
                         else:
                             raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
                     else:
@@ -219,9 +206,15 @@ class Data:
                                 raise RuntimeError("Data Error: {} is not a number.".format(datum))
                             data.append(number)
                         elif self.var_data_type[index].name == "categorical":
-                            data.append(datum)
-                            if datum not in self.cats2levels[self.col2header[index]]:
-                                self.cats2levels[self.col2header[index]].append(datum)
+                            temp_header = self.whole_col2header[index]
+                            temp_list = self.cats2levels[temp_header]
+                            temp_dict = self.cats2level_dicts[temp_header]
+                            if datum not in temp_list:
+                                temp_list.append(datum)
+                                temp_dict = self.cats2level_dicts[temp_header] = \
+                                    (dict(zip(temp_list, range(len(temp_list)))))
+                                self.levels2cats_dicts[temp_header] = dict(zip(range(len(temp_list)), temp_list))
+                            data.append(temp_dict[datum])
                         elif self.var_data_type[index].name == "string":
                             data.append(datum)
                         elif self.var_data_type[index].name == "date":
@@ -231,17 +224,36 @@ class Data:
                                 date = "N/A"
                             data.append(date)
                         elif self.var_data_type[index].name == "missing":
-                            raise ValueError("Invalid data type: {}".format(self.var_data_type[index]))
+                            data.append(datum)
                         else:
                             raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
-                self.data_array = self.data_array.d_append(m.Matrix(1, len(data)))
-                self.data_array.set_row(row_index, data)
+                self.whole_data_array = self.whole_data_array.d_append(m.Matrix(1, len(data)))
+                self.whole_data_array.set_row(row_index, data)
 
-        print("Data: \n{}".format(self.data_array))
+        self.data_array = m.Matrix(self.whole_data_array.rows, 0)
+        for index, var_type in enumerate(self.var_data_type):
+            if var_type.name != "missing":
+                self.data_array = self.data_array.r_append(
+                    m.Matrix(0, 0,
+                             m.Matrix(0, 0,
+                                      [self.whole_data_array.get_col(index)]).column_set()))
+
+        # print("Whole data: \n{}".format(self.whole_data_array))
+        # print("Data: \n{}".format(self.data_array))
         self.data = self.data_array.to_numpy()
+        self.headers = []
+        self.header2col = {}
+        self.col2header = {}
+        new_index = 0
+        for index, header in enumerate(self.whole_headers):
+            if self.var_data_type[index].name != "missing":
+                # print(self.var_data_type[index])
+                # print(header)
+                self.headers.append(header)
+                self.header2col[header] = new_index
+                self.col2header[new_index] = header
+                new_index += 1
 
-
-        pass
 
     def __str__(self):
         """toString method
@@ -258,7 +270,48 @@ class Data:
         NOTE: It is fine to print out int-coded categorical variables (no extra work compared to printing out numeric data).
         Printing out the categorical variables with string levels would be a small extension.
         """
-        pass
+        sizes = []
+        data_types = []
+        out_string = "┌"
+        for index, word in enumerate(self.headers):
+            temp_size = len(word) + 2
+            data_type = self.var_data_type[self.whole_header2col[self.col2header[index]]]
+            data_types.append(data_type)
+            if data_type.name == "categorical":
+                for category in self.cats2levels[word]:
+                    if len(category) > temp_size:
+                        temp_size = len(category) + 2
+            sizes.append(temp_size)
+            out_string += temp_size * "─" + "┬"
+        out_string = out_string.rstrip("┬")
+        out_string += "┐\n"
+        out_string += "│"
+        for index, word in enumerate(self.headers):
+            size = sizes[index]
+            sizer = '{:^' + str(size) + '.' + str(size) + '}'
+            out_string += sizer.format(str(word)) + "│"
+        out_string += "\n├"
+        for s in sizes:
+            out_string += s * "─" + "┼"
+        out_string = out_string.rstrip("┼")
+        out_string += "┤\n"
+        for row in self.data_array.row_set():
+            out_string += "│"
+            for index, entry in enumerate(row):
+                data_type = data_types[index]
+                fill = entry
+                size = sizes[index]
+                sizer = '{:^' + str(size) + '.' + str(size) + '}'
+                if data_type.name == "categorical":
+                    fill = self.levels2cats_dicts[self.col2header[index]][int(entry)]
+                out_string += sizer.format(str(fill)) + "│"
+            out_string += "\n"
+        out_string += "└"
+        for s in sizes:
+            out_string += s * "─" + "┴"
+        out_string = out_string.rstrip("┴")
+        out_string += "┘\n"
+        return out_string
 
     def get_headers(self):
         """Get list of header names (all variables)
