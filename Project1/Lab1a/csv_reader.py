@@ -34,7 +34,7 @@ def read_csv(filepath):
 
     NOTE:
     - You should only use standard Python to implement this method. Do not import other modules.
-    - Remember that Python has a helpful `split` string method that splits up a string into a list based on a delimitter
+    - Remember that Python has a helpful `split` string method that splits up a string into a list based on a delimiter
     of your choice.
     - There is a helpful string method to remove new line characters.
     - If you are not using a `with` block, don't forget to close the file handle!

@@ -5,14 +5,13 @@ Roman Schiffino
 CS 251: Data Analysis and Visualization
 Spring 2024
 """
-import numbers
 
+import dateutil.parser as d_parse
 import numpy as np
-import dateutil.parser as dParse
 
+import matrix as m
 from dataTypes import DataTypes as dT
 from dataTypesTrim import DataTypes as dTT
-import matrix as m
 
 
 class Data:
@@ -62,6 +61,7 @@ class Data:
             - Any others you find helpful in your implementation
         - If `filepath` isn't None, call the `read` method.
         """
+        # For utility and organization.
         self.file = None
         self.filepath = None
         self.headers = headers
@@ -72,6 +72,7 @@ class Data:
         self.data = data
         self.header2col = header2col
         self.whole_header2col = None
+        # I love ternary operators if that wasn't immediately obvious.
         self.col2header = None if header2col is None else dict(zip(header2col.values(), header2col.keys()))
         self.whole_col2header = None
         self.cats2levels = {} if cats2levels is None else cats2levels
@@ -166,6 +167,8 @@ class Data:
                 if datum.name == "categorical":
                     self.cats2levels[self.whole_headers[index]] = []
                     self.cats2level_dicts[self.whole_headers[index]] = {}
+                    self.levels2cats[self.whole_headers[index]] = []
+                    self.levels2cats_dicts[self.whole_headers[index]] = {}
             self.whole_data_array = m.Matrix(0, len(headers))
             for row_index, line in enumerate(file_lines[2:]):
                 raw_data = line.split(',')
@@ -182,9 +185,10 @@ class Data:
                             temp_dict = self.cats2level_dicts[temp_header]
                             if category not in temp_list:
                                 temp_list.append(category)
-                                temp_dict = self.cats2level_dicts[temp_header] = \
-                                    (dict(zip(temp_list, range(len(temp_list)))))
-                                self.levels2cats_dicts[temp_header] = dict(zip(range(len(temp_list)), temp_list))
+                                index = len(temp_list) - 1
+                                self.cats2level_dicts[temp_header][temp_list[index]] = index
+                                self.levels2cats_dicts[temp_header][index] = category
+                                temp_dict = self.cats2level_dicts[temp_header]
                             data.append(temp_dict[category])
                         elif self.var_data_type[index].name == "string":
                             data.append(datum)
@@ -211,29 +215,29 @@ class Data:
                             temp_dict = self.cats2level_dicts[temp_header]
                             if datum not in temp_list:
                                 temp_list.append(datum)
-                                temp_dict = self.cats2level_dicts[temp_header] = \
-                                    (dict(zip(temp_list, range(len(temp_list)))))
-                                self.levels2cats_dicts[temp_header] = dict(zip(range(len(temp_list)), temp_list))
+                                index = len(temp_list) - 1
+                                self.cats2level_dicts[temp_header][temp_list[index]] = index
+                                self.levels2cats_dicts[temp_header][index] = datum
+                                temp_dict = self.cats2level_dicts[temp_header]
                             data.append(temp_dict[datum])
                         elif self.var_data_type[index].name == "string":
                             data.append(datum)
                         elif self.var_data_type[index].name == "date":
                             try:
-                                date = dParse.parse(datum)
-                            except dParse.ParserError:
+                                date = d_parse.parse(datum)
+                            except d_parse.ParserError:
                                 date = "N/A"
                             data.append(date)
                         elif self.var_data_type[index].name == "missing":
                             data.append(datum)
                         else:
                             raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
-                self.whole_data_array = self.whole_data_array.d_append(m.Matrix(1, len(data)))
-                self.whole_data_array.set_row(row_index, data)
+                self.whole_data_array.d_append(m.Matrix(0, 0, [data]))
 
         self.data_array = m.Matrix(self.whole_data_array.rows, 0)
         for index, var_type in enumerate(self.var_data_type):
             if var_type.name != "missing":
-                self.data_array = self.data_array.r_append(
+                self.data_array.r_append(
                     m.Matrix(0, 0,
                              m.Matrix(0, 0,
                                       [self.whole_data_array.get_col(index)]).column_set()))
@@ -279,8 +283,12 @@ class Data:
             data_types.append(data_type)
             if data_type.name == "categorical":
                 for category in self.cats2levels[word]:
-                    if len(category) > temp_size:
-                        temp_size = len(category) + 2
+                    if len(category) + 2 > temp_size:
+                        temp_size = len(category) + 5 + len(str(self.cats2level_dicts[word][category]))
+            else:
+                for entry in self.data[:, self.header2col[word]]:
+                    if len(str(entry)) + 2 > temp_size:
+                        temp_size = len(str(entry)) + 2
             sizes.append(temp_size)
             out_string += temp_size * "─" + "┬"
         out_string = out_string.rstrip("┬")
@@ -303,7 +311,7 @@ class Data:
                 size = sizes[index]
                 sizer = '{:^' + str(size) + '.' + str(size) + '}'
                 if data_type.name == "categorical":
-                    fill = self.levels2cats_dicts[self.col2header[index]][int(entry)]
+                    fill = self.levels2cats_dicts[self.col2header[index]][int(entry)] + " (" + str(entry) + ")"
                 out_string += sizer.format(str(fill)) + "│"
             out_string += "\n"
         out_string += "└"
@@ -320,7 +328,7 @@ class Data:
         -----------
         Python list of str.
         """
-        pass
+        return self.headers
 
     def get_mappings(self):
         """Get method for mapping between variable name and column index
@@ -329,7 +337,7 @@ class Data:
         -----------
         Python dictionary. str -> int
         """
-        pass
+        return self.header2col
 
     def get_cat_level_mappings(self):
         """Get method for mapping between categorical variable names and a list of the respective unique level strings.
@@ -338,7 +346,7 @@ class Data:
         -----------
         Python dictionary. str -> list of str
         """
-        pass
+        return self.cats2levels
 
     def get_num_dims(self):
         """Get method for number of dimensions in each data sample
@@ -347,7 +355,7 @@ class Data:
         -----------
         int. Number of dimensions in each data sample. Same thing as number of variables.
         """
-        pass
+        return len(self.headers)
 
     def get_num_samples(self):
         """Get method for number of data points (samples) in the dataset
@@ -356,7 +364,7 @@ class Data:
         -----------
         int. Number of data samples in dataset.
         """
-        pass
+        return self.data_array.rows
 
     def get_sample(self, rowInd):
         """Gets the data sample at index `rowInd` (the `rowInd`-th sample)
@@ -365,7 +373,7 @@ class Data:
         -----------
         ndarray. shape=(num_vars,) The data sample at index `rowInd`
         """
-        pass
+        return self.data_array.get_row(rowInd)
 
     def get_header_indices(self, headers):
         """Gets the variable (column) indices of the str variable names in `headers`.
@@ -378,7 +386,11 @@ class Data:
         -----------
         Python list of nonnegative ints. shape=len(headers). The indices of the headers in `headers` list.
         """
-        pass
+        output = []
+        for header in headers:
+            output.append(self.header2col[header])
+        return output
+
 
     def get_all_data(self):
         """Gets a copy of the entire dataset
@@ -391,7 +403,7 @@ class Data:
             NOTE: This should be a COPY, not the data stored here itself. This can be accomplished with numpy's copy
             function.
         """
-        pass
+        return self.data.copy()
 
     def head(self):
         """Return the 1st five data samples (all variables)
@@ -402,7 +414,7 @@ class Data:
         -----------
         ndarray. shape=(5, num_vars). 1st five data samples.
         """
-        pass
+        return self.data[:5, :]
 
     def tail(self):
         """Return the last five data samples (all variables)
@@ -413,7 +425,7 @@ class Data:
         -----------
         ndarray. shape=(5, num_vars). Last five data samples.
         """
-        pass
+        return self.data[-5:, :]
 
     def limit_samples(self, start_row, end_row):
         """Update the data so that this `Data` object only stores samples in the contiguous range:
@@ -425,7 +437,7 @@ class Data:
         """
         pass
 
-    def select_data(self, headers, rows=[]):
+    def select_data(self, headers, rows=None):
         """Return data samples corresponding to the variable names in `headers`.
         If `rows` is empty, return all samples, otherwise return samples at the indices specified by the `rows` list.
 
@@ -447,4 +459,9 @@ class Data:
 
         Hint: For selecting a subset of rows from the data ndarray, check out np.ix_
         """
-        pass
+        if rows is None:
+            rows = []
+        temp_array = self.data
+        if len(rows) != 0:
+            temp_array = self.data[[rows], :]
+        return temp_array[:, self.get_header_indices(headers)]

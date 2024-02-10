@@ -101,6 +101,7 @@ Showing first 5/15 rows.
 def print_austin(test_filename):
     test_data = Data(test_filename)
     print(test_data)
+    print(test_data.select_data(test_data.headers))
 
     template_str = '''
 -------------------------------

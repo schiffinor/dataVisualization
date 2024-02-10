@@ -96,7 +96,7 @@ class Matrix:
         """
         if y >= self.columns:
             raise ValueError("column index out of range")
-        if len(val_list) != self.rows():
+        if len(val_list) != self.rows:
             raise ValueError("length of value list does not match number of rows")
         for colIndex, row in enumerate(self.load):
             row[y] = val_list[colIndex]
@@ -113,53 +113,32 @@ class Matrix:
         """
         Constructs a matrix where every unit of matrix other is appended to the right of the matrix self.
         """
-        new_matrix = Matrix(int(self.rows), int(self.columns + other.columns))
-        for x in range(int(self.rows)):
-            for y in range(int(self.columns + other.columns)):
-                if y < self.columns:
-                    new_matrix.set(x, y, self.get(x, y))
-                else:
-                    new_matrix.set(x, y, other.get(x, y - self.columns))
-        return new_matrix
+        self.columns += other.columns
+        for index, row in enumerate(self.load):
+            self.load[index] = row + other.load[index]
 
     def l_append(self, other):
         """
         Constructs a matrix where every unit of matrix other is appended to the left of the matrix self.
         """
-        new_matrix = Matrix(int(self.rows), int(self.columns + other.columns))
-        for x in range(new_matrix.rows):
-            for y in range(new_matrix.columns):
-                if y < self.columns:
-                    new_matrix.set(x, y, other.get(x, y))
-                else:
-                    new_matrix.set(x, y, self.get(x, y - self.columns))
-        return new_matrix
+        self.columns += other.columns
+        for index, row in enumerate(self.load):
+            self.load[index] = other.load[index] + row
 
     def u_append(self, other):
         """
         Constructs a matrix where every unit of matrix other is appended above the matrix self.
         """
-        new_matrix = Matrix(int(self.rows + other.rows), int(self.columns))
-        for x in range(new_matrix.rows):
-            for y in range(new_matrix.columns):
-                if x < self.rows:
-                    new_matrix.set(x, y, other.get(x, y))
-                else:
-                    new_matrix.set(x, y, self.get(x - self.rows, y))
-        return new_matrix
+        self.rows += other.rows
+        self.load = other.load + self.load
 
     def d_append(self, other):
         """
         Constructs a matrix where every unit of matrix other is appended below the matrix self.
         """
-        new_matrix = Matrix(int(self.rows + other.rows), int(self.columns))
-        for x in range(new_matrix.rows):
-            for y in range(new_matrix.columns):
-                if x < self.rows:
-                    new_matrix.set(x, y, self.get(x, y))
-                else:
-                    new_matrix.set(x, y, other.get(x - self.rows, y))
-        return new_matrix
+        self.rows += other.rows
+        self.load = self.load + other.load
+
 
     def __mul__(self, other):
         new_matrix = Matrix(int(self.rows), int(other.columns))
@@ -206,7 +185,5 @@ class Matrix:
 
 
     def to_numpy(self):
-        print(self.column_set())
         output = np.array(self.load)
-        output.dtype
         return output
