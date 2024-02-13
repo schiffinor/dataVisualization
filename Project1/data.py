@@ -8,7 +8,7 @@ Spring 2024
 import numbers
 
 import numpy as np
-import dateutil.parser as dParse
+import dateutil.parser as d_parse
 
 from dataTypes import DataTypes as dT
 from dataTypesTrim import DataTypes as dTT
@@ -132,7 +132,7 @@ class Data:
             for raw_line in raw_file_lines:
                 line = raw_line.strip("\n")
                 file_lines.append(line)
-
+            self.file.close()
 
             raw_headers = file_lines[0].split(',')
             headers = []
@@ -219,8 +219,8 @@ class Data:
                             data.append(datum)
                         elif self.var_data_type[index].name == "date":
                             try:
-                                date = dParse.parse(datum)
-                            except dParse.ParserError:
+                                date = d_parse.parse(datum)
+                            except d_parse.ParserError:
                                 date = "N/A"
                             data.append(date)
                         elif self.var_data_type[index].name == "missing":

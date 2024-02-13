@@ -5,7 +5,6 @@ CS 251: Data Analysis and Visualization
 Lab 1a
 """
 
-
 def read_csv(filepath):
     """Reads and returns the data from a CSV file located at `filepath`.
 
@@ -40,7 +39,49 @@ def read_csv(filepath):
     - If you are not using a `with` block, don't forget to close the file handle!
     """
     # YOUR CODE HERE (you can delete the pass statement below)
-    pass
+    if filepath is not None and len(filepath) != 0:
+        if filepath != filepath:
+            filepath = filepath
+        else:
+            print("Filepath is already set to {}".format(filepath))
+            print("Re-reading data from {}".format(filepath))
+        try:
+            file = open(filepath, 'r')
+            print("Reading data from file: {}".format(filepath))
+        except OSError as e:
+            print("Could not open file: {}".format(filepath))
+            raise RuntimeError(e.strerror)
+        raw_file_lines = file.readlines()
+        file_lines = []
+        for raw_line in raw_file_lines:
+            line = raw_line.strip("\n")
+            file_lines.append(line)
+        file.close()
+        
+        data_output = []
+        for line in file_lines[:]:
+            raw_data = line.split(',')
+            data = []
+            for index, raw_datum in enumerate(raw_data):
+                datum = raw_datum.strip()
+                if datum == "":
+                    data.append(datum)
+                else:
+                    try:
+                        number = float(datum)
+                    except OverflowError:
+                        number = float("inf")
+                        print("Overflow Error: {} is too large.".format(datum))
+                    except ValueError:
+                        number = datum
+                    data.append(number)        
+            data_output.append(data)
+            
+        return data_output
+    
+    else:
+        raise ValueError("Filepath is not set. Please set the filepath to the.csv file to be read in.")
+
 
 
 def read_cat_csv(filepath):
@@ -89,6 +130,56 @@ def read_cat_csv(filepath):
     # Names of the variables in categorical.csv in the correct order
     var_names = ['name', 'year', 'hobby']
 
+    if filepath is not None and len(filepath) != 0:
+        if filepath != filepath:
+            filepath = filepath
+        else:
+            print("Filepath is already set to {}".format(filepath))
+            print("Re-reading data from {}".format(filepath))
+        try:
+            file = open(filepath, 'r')
+            print("Reading data from file: {}".format(filepath))
+        except OSError as e:
+            print("Could not open file: {}".format(filepath))
+            raise RuntimeError(e.strerror)
+        raw_file_lines = file.readlines()
+        file_lines = []
+        for raw_line in raw_file_lines:
+            line = raw_line.strip("\n")
+            file_lines.append(line)
+        file.close()
+
+        data_output = []
+        cats2levels = {}
+
+        for var in var_names:
+            cats2levels[var] = []
+
+        for line in file_lines[:]:
+            raw_data = line.split(',')
+            data = []
+            for index, raw_datum in enumerate(raw_data):
+                datum = raw_datum.strip()
+                if datum == "":
+                    category = "Missing"
+                    temp_header = var_names[index]
+                    temp_list = cats2levels[temp_header]
+                    if category not in temp_list:
+                        temp_list.append(category)
+                    data.append(temp_list.index(category))
+                else:
+                    category = datum
+                    temp_header = var_names[index]
+                    temp_list = cats2levels[temp_header]
+                    if category not in temp_list:
+                        temp_list.append(category)
+                    data.append(temp_list.index(category))
+            data_output.append(data)
+
+        return data_output, cats2levels
+
+    else:
+        raise ValueError("Filepath is not set. Please set the filepath to the.csv file to be read in.")
     # YOUR CODE HERE
     # Initialize level dictionary to empty lists...
     
