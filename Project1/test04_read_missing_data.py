@@ -4,7 +4,7 @@ CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver W. Layton
 """
-from data import Data
+from data import Data, data2str, data2str_source
 import numpy as np
 np.set_printoptions(precision=1, suppress=True)
 
@@ -74,6 +74,12 @@ def read_austin_pet_data(test_filename):
       2.     20.      9.     16.     21.]'''
     print(f'{expected_data}')
     print('Pay attention to the data type! The numbers should be floats or nan (not have quotes around them).')
+    print("\n---------------------------------------------------------------------------------------\n")
+    print("Extra TEST: \n")
+    # print("Full data: \n {}".format(test_data))
+    print("Truncated data: \n{}".format(data2str_source(test_data.data[-1000:, :], test_data)))
+    print("Truncated sample: \n{}".format(data2str(test_data.select_data(test_data.headers[0:3], range(-10000, 0)), test_data.headers[0:3], test_data.cats2level_dicts, test_data.var_data_type, test_data.whole_header2col, test_data.header2col)))
+    print("Truncated sample: \n{}".format(data2str(test_data.select_data([test_data.headers[x] for x in [0, 2, 4, 6]], range(-10000, 0)), [test_data.headers[x] for x in [0, 2, 4, 6]], test_data.cats2level_dicts, test_data.var_data_type, test_data.whole_header2col, test_data.header2col)))
 
 
 if __name__ == '__main__':

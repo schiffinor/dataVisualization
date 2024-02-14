@@ -5,16 +5,14 @@ Roman Schiffino
 CS 251: Data Analysis and Visualization
 Spring 2024
 """
-import numbers
 
 import dateutil.parser as d_parse
 import numpy as np
-import dateutil.parser as dParse
-
-import matrix as m
 from dataTypes import DataTypes as dT
 from dataTypesTrim import DataTypes as dTT
 import matrix as m
+import math
+from typing import List, Dict
 
 
 class Data:
@@ -22,7 +20,8 @@ class Data:
     Represents data read in from .csv files
     """
 
-    def __init__(self, filepath=None, headers=None, data=None, header2col=None, cats2levels=None, allDataTypes=False, compatMode=False):
+    def __init__(self, filepath=None, headers=None, data=None, header2col=None, cats2levels=None, allDataTypes=False,
+                 compatMode=False):
         """
         Data object constructor
 
@@ -53,16 +52,6 @@ class Data:
                 'letter' -> ['a', 'b', 'c']
                 'number' -> ['1', '2']
                 'greeting' -> ['hi']
-
-        TODO:
-        - Declare/initialize the following instance variables:
-            - filepath
-            - headers
-            - data
-            - header2col
-            - cats2levels
-            - Any others you find helpful in your implementation
-        - If `filepath` isn't None, call the `read` method.
         """
         # For utility and organization.
         self.file = None
@@ -76,15 +65,20 @@ class Data:
         self.data = data
         self.header2col = header2col
         self.whole_header2col = None
-        # I love ternary operators if that wasn't immediately obvious.
+        # I love ternary operators if that wasn't immediately obvious. (Java's is better.)
         self.col2header = None if header2col is None else dict(zip(header2col.values(), header2col.keys()))
         self.whole_col2header = None
+        # Basically I assume that pythons dict is a hashmap. Hashmap is more efficient than a list.
         self.cats2levels = {} if cats2levels is None else cats2levels
         self.cats2level_dicts = {} if cats2levels is None else None
         self.levels2cats = {} if cats2levels is None else cats2levels
         self.levels2cats_dicts = {} if cats2levels is None else None
         self.allDataTypes = allDataTypes
+        # To meet the requirements of test files this was added. Basically restricts possible data types.
         self.dTRef = dT if allDataTypes else dTT
+        # Also to meet the requirements of test files this was added.
+        # My base code is quite robust and handles a lot of different stuff by default.
+        # This is a feature to limit that handling. Causes error if all data types are missing.
         self.compatMode = compatMode
 
         if filepath is not None:
@@ -109,16 +103,6 @@ class Data:
             NOTE: In the future, the Returns section will be omitted from docstrings if there should be nothing returned
 
 
-        NOTE:
-        - In any CS251 project, you are welcome to create as many helper methods as you'd like. The crucial thing is to
-        make sure that the provided method signatures work as advertised.
-        - You should only use the basic Python to do your parsing. (i.e. no Numpy or other imports).
-        Points will be taken off otherwise.
-        - Have one of the CSV files provided on the project website open in a text editor as you code and debug.
-        - Run the provided test scripts regularly to see desired outputs and to check your code.
-        - It might be helpful to implement support for only numeric data first, test it, then add support for categorical
-        variable types afterward.
-        - Make use of code from Lab 1a!
         """
         if filepath is not None and len(filepath) != 0:
             if self.filepath != filepath:
@@ -160,7 +144,8 @@ class Data:
                 else:
                     data_types.append(self.dTRef[data_type])
             self.var_data_type = data_types
-            if all(d_type.name == "missing" for d_type in self.var_data_type) and len(self.var_data_type) > 0 and not self.compatMode:
+            if all(d_type.name == "missing" for d_type in self.var_data_type) and len(
+                    self.var_data_type) > 0 and not self.compatMode:
                 raise ValueError("All data types invalid.\n"
                                  "Input file likely missing data types.\n"
                                  "Second line must list data types."
@@ -208,10 +193,10 @@ class Data:
                                 number = float(datum)
                             except OverflowError:
                                 number = float("inf")
-                                raise RuntimeError("Overflow Error: {} is too large.".format(datum))
+                                print("Overflow Error: {} is too large.".format(datum))
                             except ValueError:
                                 number = np.nan
-                                raise RuntimeError("Data Error: {} is not a number.".format(datum))
+                                print("Data Error: {} is not a number.".format(datum))
                             data.append(number)
                         elif self.var_data_type[index].name == "categorical":
                             temp_header = self.whole_col2header[index]
@@ -262,6 +247,7 @@ class Data:
                 self.col2header[new_index] = header
                 new_index += 1
 
+        print("Data processing complete!\n")
 
     def __str__(self):
         """toString method
@@ -307,7 +293,15 @@ class Data:
             out_string += s * "─" + "┼"
         out_string = out_string.rstrip("┼")
         out_string += "┤\n"
-        for row in self.data_array.row_set():
+        rows = self.data_array.row_set()
+        row_count = len(rows)
+        order = math.floor(math.log10(row_count))
+        print("Row count: {}".format(row_count))
+        print("Order: {}".format(order))
+        for ind, row in enumerate(rows):
+            if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
+                ratio = ind / row_count
+                print("String output {:.2%}".format(ratio))
             out_string += "│"
             for index, entry in enumerate(row):
                 data_type = data_types[index]
@@ -395,7 +389,6 @@ class Data:
             output.append(self.header2col[header])
         return output
 
-
     def get_all_data(self):
         """Gets a copy of the entire dataset
 
@@ -439,7 +432,8 @@ class Data:
         (Week 2)
 
         """
-        pass
+        setter = self.data[start_row:end_row, :]
+        self.data = setter
 
     def select_data(self, headers, rows=None):
         """Return data samples corresponding to the variable names in `headers`.
@@ -467,5 +461,189 @@ class Data:
             rows = []
         temp_array = self.data
         if len(rows) != 0:
-            temp_array = self.data[[rows], :]
+            temp_array = self.data[[rows], :][0]
         return temp_array[:, self.get_header_indices(headers)]
+
+
+def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, Dict[str, int]],
+             var_data_type: List[int],
+             whole_header2col: Dict[str, int], header2col: Dict[str, int]):
+    """toString method
+
+    (For those who don't know, __str__ works like toString in Java...In this case, it's what's called to determine
+    what gets shown when a `Data` object is printed.)
+
+    Returns:
+    -----------
+    str. A nicely formatted string representation of the data in this Data object.
+        Only show, at most, the 1st 5 rows of data
+        See the test code for an example output.
+
+    NOTE: It is fine to print out int-coded categorical variables (no extra work compared to printing out numeric data).
+    Printing out the categorical variables with string levels would be a small extension.
+    """
+    data_output = data.tolist()
+
+    data_array = m.Matrix(0, 0, data_output)
+    new_dict = {}
+    for index, word in enumerate(headers):
+        new_dict[word] = index
+    header2col = new_dict
+    new_list = []
+    for index, word in enumerate(headers):
+        new_list.append(var_data_type[whole_header2col[word]])
+    var_data_type = new_list
+    col2header = {}
+    for index, word in enumerate(headers):
+        col2header[index] = word
+
+    flip_map = map(lambda x: [x, dict(zip(cats2level_dicts[str(x)].values(), cats2level_dicts[str(x)].keys()))],
+                   list(cats2level_dicts.keys()))
+
+    lc_keys = []
+    lc_vals = []
+
+    for entry in flip_map:
+        lc_keys.append(entry[0])
+        lc_vals.append(entry[1])
+
+    levels2cats_dicts = dict(zip(lc_keys, lc_vals))
+
+    sizes = []
+    data_types = []
+    out_string = "┌"
+    for index, word in enumerate(headers):
+        temp_size = len(word) + 2
+        data_type = var_data_type[index]
+        data_types.append(data_type)
+        print("Data type: {}".format(data_type.name))
+        if data_type.name == "categorical":
+            for category in cats2level_dicts[word].keys():
+                if len(category) + 2 > temp_size:
+                    temp_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
+        else:
+            for entry in data[:, header2col[word]]:
+                if len(str(entry)) + 2 > temp_size:
+                    temp_size = len(str(entry)) + 2
+        sizes.append(temp_size)
+        out_string += temp_size * "─" + "┬"
+    out_string = out_string.rstrip("┬")
+    out_string += "┐\n"
+    out_string += "│"
+    for index, word in enumerate(headers):
+        size = sizes[index]
+        sizer = '{:^' + str(size) + '.' + str(size) + '}'
+        out_string += sizer.format(str(word)) + "│"
+    out_string += "\n├"
+    for s in sizes:
+        out_string += s * "─" + "┼"
+    out_string = out_string.rstrip("┼")
+    out_string += "┤\n"
+    rows = data_array.row_set()
+    row_count = len(rows)
+    order = math.floor(math.log10(row_count))
+    print("Row count: {}".format(row_count))
+    print("Order: {}".format(order))
+    for ind, row in enumerate(rows):
+        row = list(map(lambda x: row[header2col[x]], headers))
+        if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
+            ratio = ind / row_count
+            print("String output {:.2%}".format(ratio))
+        out_string += "│"
+        for index, entry in enumerate(row):
+            data_type = data_types[index]
+            fill = entry
+            size = sizes[index]
+            sizer = '{:^' + str(size) + '.' + str(size) + '}'
+            if data_type.name == "categorical":
+                fill = levels2cats_dicts[col2header[index]][int(entry)] + " (" + str(int(entry)) + ")"
+            out_string += sizer.format(str(fill)) + "│"
+        out_string += "\n"
+    out_string += "└"
+    for s in sizes:
+        out_string += s * "─" + "┴"
+    out_string = out_string.rstrip("┴")
+    out_string += "┘\n"
+    return out_string
+
+
+def data2str_source(data: np.ndarray, data_source: Data):
+    """toString method
+
+    (For those who don't know, __str__ works like toString in Java...In this case, it's what's called to determine
+    what gets shown when a `Data` object is printed.)
+
+    Returns:
+    -----------
+    str. A nicely formatted string representation of the data in this Data object.
+        Only show, at most, the 1st 5 rows of data
+        See the test code for an example output.
+
+    NOTE: It is fine to print out int-coded categorical variables (no extra work compared to printing out numeric data).
+    Printing out the categorical variables with string levels would be a small extension.
+    """
+    data_output = data.tolist()
+
+    data_array = m.Matrix(0, 0, data_output)
+    headers = data_source.headers
+    var_data_type = data_source.var_data_type
+    whole_header2col = data_source.whole_header2col
+    header2col = data_source.header2col
+    col2header = data_source.col2header
+    cats2level_dicts = data_source.cats2level_dicts
+    levels2cats_dicts = data_source.levels2cats_dicts
+
+    sizes = []
+    data_types = []
+    out_string = "┌"
+    for index, word in enumerate(headers):
+        temp_size = len(word) + 2
+        data_type = var_data_type[whole_header2col[col2header[index]]]
+        data_types.append(data_type)
+        if data_type.name == "categorical":
+            for category in cats2level_dicts[word].keys():
+                if len(category) + 2 > temp_size:
+                    temp_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
+        else:
+            for entry in data[:, header2col[word]]:
+                if len(str(entry)) + 2 > temp_size:
+                    temp_size = len(str(entry)) + 2
+        sizes.append(temp_size)
+        out_string += temp_size * "─" + "┬"
+    out_string = out_string.rstrip("┬")
+    out_string += "┐\n"
+    out_string += "│"
+    for index, word in enumerate(headers):
+        size = sizes[index]
+        sizer = '{:^' + str(size) + '.' + str(size) + '}'
+        out_string += sizer.format(str(word)) + "│"
+    out_string += "\n├"
+    for s in sizes:
+        out_string += s * "─" + "┼"
+    out_string = out_string.rstrip("┼")
+    out_string += "┤\n"
+    rows = data_array.row_set()
+    row_count = len(rows)
+    order = math.floor(math.log10(row_count))
+    print("Row count: {}".format(row_count))
+    print("Order: {}".format(order))
+    for ind, row in enumerate(rows):
+        if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
+            ratio = ind / row_count
+            print("String output {:.2%}".format(ratio))
+        out_string += "│"
+        for index, entry in enumerate(row):
+            data_type = data_types[index]
+            fill = entry
+            size = sizes[index]
+            sizer = '{:^' + str(size) + '.' + str(size) + '}'
+            if data_type.name == "categorical":
+                fill = levels2cats_dicts[col2header[index]][int(entry)] + " (" + str(int(entry)) + ")"
+            out_string += sizer.format(str(fill)) + "│"
+        out_string += "\n"
+    out_string += "└"
+    for s in sizes:
+        out_string += s * "─" + "┴"
+    out_string = out_string.rstrip("┴")
+    out_string += "┘\n"
+    return out_string

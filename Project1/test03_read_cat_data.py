@@ -7,6 +7,7 @@ Oliver W. Layton
 import numpy as np
 
 from data import Data
+from data import data2str
 
 
 def read_data_constructor(iris_filename):
@@ -33,6 +34,7 @@ def _read_iris_common(iris_data):
     print(f'Your data is a ndarray? {isinstance(iris_data.data, np.ndarray)}')
     print(f'Your data has {iris_data.data.shape[0]} samples and {iris_data.data.shape[1]} variables/dimensions.\nIt should have 150 samples and 5 variables/dimensions.')
     print(iris_data)
+    print(data2str(iris_data.tail(), iris_data.headers, iris_data.cats2level_dicts, iris_data.var_data_type, iris_data.whole_header2col, iris_data.header2col))
 
     non_numeric = [val for val in iris_data.data.flatten() if isinstance(val, str)]
     if len(non_numeric) > 0:
@@ -81,6 +83,9 @@ def read_mixed_data(test_filename):
  [ 27.    1.    6.  158.    2.    1.    2. ]
  [ 23.    2.    7.5 162.    2.    2.    3. ]]'''
     print(f'Your test data looks like:\n{expected_data}')
+    print("Extra TEST: ")
+    print(test_data)
+    print(data2str(test_data.data, test_data.headers, test_data.cats2level_dicts, test_data.var_data_type, test_data.whole_header2col, test_data.header2col))
     print('Pay attention to the data type! The numbers should be floats (not have quotes around them).')
 
 

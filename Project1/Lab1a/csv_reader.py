@@ -5,6 +5,7 @@ CS 251: Data Analysis and Visualization
 Lab 1a
 """
 
+
 def read_csv(filepath):
     """Reads and returns the data from a CSV file located at `filepath`.
 
@@ -57,7 +58,7 @@ def read_csv(filepath):
             line = raw_line.strip("\n")
             file_lines.append(line)
         file.close()
-        
+
         data_output = []
         for line in file_lines[:]:
             raw_data = line.split(',')
@@ -74,14 +75,13 @@ def read_csv(filepath):
                         print("Overflow Error: {} is too large.".format(datum))
                     except ValueError:
                         number = datum
-                    data.append(number)        
+                    data.append(number)
             data_output.append(data)
-            
+
         return data_output
-    
+
     else:
         raise ValueError("Filepath is not set. Please set the filepath to the.csv file to be read in.")
-
 
 
 def read_cat_csv(filepath):
@@ -182,4 +182,3 @@ def read_cat_csv(filepath):
         raise ValueError("Filepath is not set. Please set the filepath to the.csv file to be read in.")
     # YOUR CODE HERE
     # Initialize level dictionary to empty lists...
-    
