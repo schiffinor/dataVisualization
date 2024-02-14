@@ -81,7 +81,7 @@ if __name__ == '__main__':
     print('Beginning test 1 (Data with missing data)...')
     print('---------------------------------------------')
     mixed_filename = 'data/test_data_missing.csv'
-    # read_missing_data(mixed_filename)
+    read_missing_data(mixed_filename)
     print('---------------------------------------------')
     print('Finished test 1!')
     print('---------------------------------------------------------------------------------------')

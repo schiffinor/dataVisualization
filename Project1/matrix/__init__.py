@@ -71,7 +71,10 @@ class Matrix:
         """
         Returns value of matrix at row x, column y.
         """
-        return self.column_set()[y]
+        output = []
+        for row in self.load:
+            output.append(row[y])
+        return output
 
     def set(self, x, y, val):
         """

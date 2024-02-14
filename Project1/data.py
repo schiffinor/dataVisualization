@@ -72,6 +72,7 @@ class Data:
         self.var_data_type = None
         self.data_array = None
         self.whole_data_array = None
+        self.whole_data_list = None
         self.data = data
         self.header2col = header2col
         self.whole_header2col = None
@@ -172,7 +173,7 @@ class Data:
                     self.cats2level_dicts[self.whole_headers[index]] = {}
                     self.levels2cats[self.whole_headers[index]] = []
                     self.levels2cats_dicts[self.whole_headers[index]] = {}
-            self.whole_data_array = m.Matrix(0, len(headers))
+            self.whole_data_list = []
             for row_index, line in enumerate(file_lines[2:]):
                 raw_data = line.split(',')
                 data = []
@@ -235,15 +236,15 @@ class Data:
                             data.append(datum)
                         else:
                             raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
-                self.whole_data_array.d_append(m.Matrix(0, 0, [data]))
+                self.whole_data_list.append(data)
 
+        self.whole_data_array = m.Matrix(0, 0, self.whole_data_list)
         self.data_array = m.Matrix(self.whole_data_array.rows, 0)
+        print("Data extracted from file. \nNow processing data...\n")
         for index, var_type in enumerate(self.var_data_type):
             if var_type.name != "missing":
                 self.data_array.r_append(
-                    m.Matrix(0, 0,
-                             m.Matrix(0, 0,
-                                      [self.whole_data_array.get_col(index)]).column_set()))
+                    m.Matrix(0, 0, list(map(lambda x: [x], self.whole_data_array.get_col(index)))))
 
         # print("Whole data: \n{}".format(self.whole_data_array))
         # print("Data: \n{}".format(self.data_array))
