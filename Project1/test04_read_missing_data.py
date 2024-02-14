@@ -4,6 +4,8 @@ CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver W. Layton
 """
+import sys
+
 from data import Data, data2str, data2str_source
 import numpy as np
 np.set_printoptions(precision=1, suppress=True)
@@ -83,6 +85,8 @@ def read_austin_pet_data(test_filename):
 
 
 if __name__ == '__main__':
+    if sys.argv[1] == 'True':
+        sys.stdout = open('consoleOutputs/test04.txt', 'w+', encoding="utf-8")
     print('---------------------------------------------------------------------------------------')
     print('Beginning test 1 (Data with missing data)...')
     print('---------------------------------------------')
@@ -100,3 +104,5 @@ if __name__ == '__main__':
     print('---------------------------------------------')
     print('Finished test 2!')
     print('---------------------------------------------------------------------------------------')
+    if sys.argv[1] == 'True':
+        sys.stdout.close()

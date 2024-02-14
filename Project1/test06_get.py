@@ -4,6 +4,8 @@ CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver Layton, Caitrin Eaton, Hannah Wolfe, Stephanie Taylor
 """
+import sys
+
 import numpy as np
 
 from data import Data
@@ -20,6 +22,8 @@ def test_all_get_methods(iris_filename):
 
 
 if __name__ == '__main__':
+    if sys.argv[1] == 'True':
+        sys.stdout = open('consoleOutputs/test06.txt', 'w+', encoding="utf-8")
     print('---------------------------------------------------------------------------------------')
     print('Beginning test 1 (Test all get methods)...')
     print('---------------------------------------------')
@@ -28,3 +32,5 @@ if __name__ == '__main__':
     print('---------------------------------------------')
     print('Finished test 1!')
     print('---------------------------------------------------------------------------------------')
+    if sys.argv[1] == 'True':
+        sys.stdout.close()

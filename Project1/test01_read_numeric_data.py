@@ -4,6 +4,7 @@ CS 251/2: Data Analysis and Visualization
 Spring 2024
 Oliver Layton, Caitrin Eaton, Hannen Wolfe, Stephanie Taylor
 """
+import sys
 import numpy as np
 from data import Data
 
@@ -48,6 +49,8 @@ def read_data_spaces(test_filename):
 
 
 if __name__ == '__main__':
+    if sys.argv[1] == 'True':
+        sys.stdout = open('consoleOutputs/test01.txt', 'w+', encoding="utf-8")
     print('---------------------------------------------------------------------------------------')
     print('Beginning test 1 (Read data in constructor)...')
     print('---------------------------------------------')
@@ -73,3 +76,5 @@ if __name__ == '__main__':
     print('---------------------------------------------')
     print('Finished test 3!')
     print('---------------------------------------------------------------------------------------')
+    if sys.argv[1] == 'True':
+        sys.stdout.close()

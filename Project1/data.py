@@ -466,7 +466,7 @@ class Data:
 
 
 def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, Dict[str, int]],
-             var_data_type: List[int],
+             var_data_type: List[dT],
              whole_header2col: Dict[str, int], header2col: Dict[str, int]):
     """toString method
 

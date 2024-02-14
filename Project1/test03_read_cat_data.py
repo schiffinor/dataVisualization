@@ -5,7 +5,7 @@ Spring 2024
 Oliver W. Layton
 """
 import numpy as np
-
+import sys
 from data import Data
 from data import data2str
 
@@ -90,6 +90,8 @@ def read_mixed_data(test_filename):
 
 
 if __name__ == '__main__':
+    if sys.argv[1] == 'True':
+        sys.stdout = open('consoleOutputs/test03.txt', 'w+',  encoding="utf-8")
     print('---------------------------------------------------------------------------------------')
     print('Beginning test 1 (Read data in constructor)...')
     print('---------------------------------------------')
@@ -124,3 +126,5 @@ if __name__ == '__main__':
     print('---------------------------------------------')
     print('Finished test 4!')
     print('---------------------------------------------------------------------------------------')
+    if sys.argv[1] == 'True':
+        sys.stdout.close()
