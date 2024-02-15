@@ -1,0 +1,24 @@
+---------------------------------------------------------------------------------------
+Beginning test 1 (CSV error handling)...
+Your program SHOULD crash in the following test.
+
+TODO: Figure out why your code should crash here and then create your own error message
+         that helps the user identify the problem and what to do to fix it. You should stop the code
+         from running in this situation (e.g. throw an error/exception, exit prematurely).
+------------------
+Reading data from file: data/iris_bad.csv
+Invalid data type: 5.1
+Ignoring Column.
+
+Invalid data type: 3.5
+Ignoring Column.
+
+Invalid data type: 1.4
+Ignoring Column.
+
+Invalid data type: 0.2
+Ignoring Column.
+
+Invalid data type: setosa
+Ignoring Column.
+

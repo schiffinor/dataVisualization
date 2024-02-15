@@ -5,9 +5,7 @@ Spring 2024
 Oliver Layton, Caitrin Eaton, Hannah Wolfe, Stephanie Taylor
 """
 import sys
-
 import numpy as np
-
 from data import Data
 
 

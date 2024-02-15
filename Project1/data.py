@@ -273,8 +273,9 @@ class Data:
             data_types.append(data_type)
             if data_type.name == "categorical":
                 for category in self.cats2levels[word]:
-                    if len(category) + 2 > temp_size:
-                        temp_size = len(category) + 5 + len(str(self.cats2level_dicts[word][category]))
+                    new_size = len(category) + 5 + len(str(self.cats2level_dicts[word][category]))
+                    if new_size > temp_size:
+                        temp_size = new_size
             else:
                 for entry in self.data[:, self.header2col[word]]:
                     if len(str(entry)) + 2 > temp_size:
@@ -519,8 +520,9 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
         print("Data type: {}".format(data_type.name))
         if data_type.name == "categorical":
             for category in cats2level_dicts[word].keys():
-                if len(category) + 2 > temp_size:
-                    temp_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
+                new_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
+                if new_size > temp_size:
+                    temp_size = new_size
         else:
             for entry in data[:, header2col[word]]:
                 if len(str(entry)) + 2 > temp_size:
@@ -602,8 +604,9 @@ def data2str_source(data: np.ndarray, data_source: Data):
         data_types.append(data_type)
         if data_type.name == "categorical":
             for category in cats2level_dicts[word].keys():
-                if len(category) + 2 > temp_size:
-                    temp_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
+                new_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
+                if new_size > temp_size:
+                    temp_size = new_size
         else:
             for entry in data[:, header2col[word]]:
                 if len(str(entry)) + 2 > temp_size:

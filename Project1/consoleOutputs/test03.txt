@@ -1,0 +1,556 @@
+---------------------------------------------------------------------------------------
+Beginning test 1 (Read data in constructor)...
+---------------------------------------------
+Reading data from file: data/iris.csv
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Your file path is:
+  data/iris.csv
+and should be:
+  data/iris.csv
+
+Your iris headers are
+  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+and should be
+  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+
+Your iris variable name-to-column mapping is
+  {'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3, 'species': 4}
+and should be
+  {'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3, 'species': 4}
+
+Your iris categorical variable name-to-level mapping is
+  {'species': ['setosa', 'versicolor', 'virginica']}
+and should be
+  {'species': ['setosa', 'versicolor', 'virginica']}
+
+Your data is a ndarray? True
+Your data has 150 samples and 5 variables/dimensions.
+It should have 150 samples and 5 variables/dimensions.
+Row count: 150
+Order: 2
+┌──────────────┬─────────────┬──────────────┬─────────────┬────────────────┐
+│ sepal_length │ sepal_width │ petal_length │ petal_width │    species     │
+├──────────────┼─────────────┼──────────────┼─────────────┼────────────────┤
+│     5.1      │     3.5     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.0     │     1.4      │     0.2     │   setosa (0)   │
+│     4.7      │     3.2     │     1.3      │     0.2     │   setosa (0)   │
+│     4.6      │     3.1     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.6     │     1.4      │     0.2     │   setosa (0)   │
+│     5.4      │     3.9     │     1.7      │     0.4     │   setosa (0)   │
+│     4.6      │     3.4     │     1.4      │     0.3     │   setosa (0)   │
+│     5.0      │     3.4     │     1.5      │     0.2     │   setosa (0)   │
+│     4.4      │     2.9     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.1     │     1.5      │     0.1     │   setosa (0)   │
+│     5.4      │     3.7     │     1.5      │     0.2     │   setosa (0)   │
+│     4.8      │     3.4     │     1.6      │     0.2     │   setosa (0)   │
+│     4.8      │     3.0     │     1.4      │     0.1     │   setosa (0)   │
+│     4.3      │     3.0     │     1.1      │     0.1     │   setosa (0)   │
+│     5.8      │     4.0     │     1.2      │     0.2     │   setosa (0)   │
+│     5.7      │     4.4     │     1.5      │     0.4     │   setosa (0)   │
+│     5.4      │     3.9     │     1.3      │     0.4     │   setosa (0)   │
+│     5.1      │     3.5     │     1.4      │     0.3     │   setosa (0)   │
+│     5.7      │     3.8     │     1.7      │     0.3     │   setosa (0)   │
+│     5.1      │     3.8     │     1.5      │     0.3     │   setosa (0)   │
+│     5.4      │     3.4     │     1.7      │     0.2     │   setosa (0)   │
+│     5.1      │     3.7     │     1.5      │     0.4     │   setosa (0)   │
+│     4.6      │     3.6     │     1.0      │     0.2     │   setosa (0)   │
+│     5.1      │     3.3     │     1.7      │     0.5     │   setosa (0)   │
+│     4.8      │     3.4     │     1.9      │     0.2     │   setosa (0)   │
+│     5.0      │     3.0     │     1.6      │     0.2     │   setosa (0)   │
+│     5.0      │     3.4     │     1.6      │     0.4     │   setosa (0)   │
+│     5.2      │     3.5     │     1.5      │     0.2     │   setosa (0)   │
+│     5.2      │     3.4     │     1.4      │     0.2     │   setosa (0)   │
+│     4.7      │     3.2     │     1.6      │     0.2     │   setosa (0)   │
+│     4.8      │     3.1     │     1.6      │     0.2     │   setosa (0)   │
+│     5.4      │     3.4     │     1.5      │     0.4     │   setosa (0)   │
+│     5.2      │     4.1     │     1.5      │     0.1     │   setosa (0)   │
+│     5.5      │     4.2     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.1     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.2     │     1.2      │     0.2     │   setosa (0)   │
+│     5.5      │     3.5     │     1.3      │     0.2     │   setosa (0)   │
+│     4.9      │     3.6     │     1.4      │     0.1     │   setosa (0)   │
+│     4.4      │     3.0     │     1.3      │     0.2     │   setosa (0)   │
+│     5.1      │     3.4     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.5     │     1.3      │     0.3     │   setosa (0)   │
+│     4.5      │     2.3     │     1.3      │     0.3     │   setosa (0)   │
+│     4.4      │     3.2     │     1.3      │     0.2     │   setosa (0)   │
+│     5.0      │     3.5     │     1.6      │     0.6     │   setosa (0)   │
+│     5.1      │     3.8     │     1.9      │     0.4     │   setosa (0)   │
+│     4.8      │     3.0     │     1.4      │     0.3     │   setosa (0)   │
+│     5.1      │     3.8     │     1.6      │     0.2     │   setosa (0)   │
+│     4.6      │     3.2     │     1.4      │     0.2     │   setosa (0)   │
+│     5.3      │     3.7     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.3     │     1.4      │     0.2     │   setosa (0)   │
+│     7.0      │     3.2     │     4.7      │     1.4     │ versicolor (1) │
+│     6.4      │     3.2     │     4.5      │     1.5     │ versicolor (1) │
+│     6.9      │     3.1     │     4.9      │     1.5     │ versicolor (1) │
+│     5.5      │     2.3     │     4.0      │     1.3     │ versicolor (1) │
+│     6.5      │     2.8     │     4.6      │     1.5     │ versicolor (1) │
+│     5.7      │     2.8     │     4.5      │     1.3     │ versicolor (1) │
+│     6.3      │     3.3     │     4.7      │     1.6     │ versicolor (1) │
+│     4.9      │     2.4     │     3.3      │     1.0     │ versicolor (1) │
+│     6.6      │     2.9     │     4.6      │     1.3     │ versicolor (1) │
+│     5.2      │     2.7     │     3.9      │     1.4     │ versicolor (1) │
+│     5.0      │     2.0     │     3.5      │     1.0     │ versicolor (1) │
+│     5.9      │     3.0     │     4.2      │     1.5     │ versicolor (1) │
+│     6.0      │     2.2     │     4.0      │     1.0     │ versicolor (1) │
+│     6.1      │     2.9     │     4.7      │     1.4     │ versicolor (1) │
+│     5.6      │     2.9     │     3.6      │     1.3     │ versicolor (1) │
+│     6.7      │     3.1     │     4.4      │     1.4     │ versicolor (1) │
+│     5.6      │     3.0     │     4.5      │     1.5     │ versicolor (1) │
+│     5.8      │     2.7     │     4.1      │     1.0     │ versicolor (1) │
+│     6.2      │     2.2     │     4.5      │     1.5     │ versicolor (1) │
+│     5.6      │     2.5     │     3.9      │     1.1     │ versicolor (1) │
+│     5.9      │     3.2     │     4.8      │     1.8     │ versicolor (1) │
+│     6.1      │     2.8     │     4.0      │     1.3     │ versicolor (1) │
+│     6.3      │     2.5     │     4.9      │     1.5     │ versicolor (1) │
+│     6.1      │     2.8     │     4.7      │     1.2     │ versicolor (1) │
+│     6.4      │     2.9     │     4.3      │     1.3     │ versicolor (1) │
+│     6.6      │     3.0     │     4.4      │     1.4     │ versicolor (1) │
+│     6.8      │     2.8     │     4.8      │     1.4     │ versicolor (1) │
+│     6.7      │     3.0     │     5.0      │     1.7     │ versicolor (1) │
+│     6.0      │     2.9     │     4.5      │     1.5     │ versicolor (1) │
+│     5.7      │     2.6     │     3.5      │     1.0     │ versicolor (1) │
+│     5.5      │     2.4     │     3.8      │     1.1     │ versicolor (1) │
+│     5.5      │     2.4     │     3.7      │     1.0     │ versicolor (1) │
+│     5.8      │     2.7     │     3.9      │     1.2     │ versicolor (1) │
+│     6.0      │     2.7     │     5.1      │     1.6     │ versicolor (1) │
+│     5.4      │     3.0     │     4.5      │     1.5     │ versicolor (1) │
+│     6.0      │     3.4     │     4.5      │     1.6     │ versicolor (1) │
+│     6.7      │     3.1     │     4.7      │     1.5     │ versicolor (1) │
+│     6.3      │     2.3     │     4.4      │     1.3     │ versicolor (1) │
+│     5.6      │     3.0     │     4.1      │     1.3     │ versicolor (1) │
+│     5.5      │     2.5     │     4.0      │     1.3     │ versicolor (1) │
+│     5.5      │     2.6     │     4.4      │     1.2     │ versicolor (1) │
+│     6.1      │     3.0     │     4.6      │     1.4     │ versicolor (1) │
+│     5.8      │     2.6     │     4.0      │     1.2     │ versicolor (1) │
+│     5.0      │     2.3     │     3.3      │     1.0     │ versicolor (1) │
+│     5.6      │     2.7     │     4.2      │     1.3     │ versicolor (1) │
+│     5.7      │     3.0     │     4.2      │     1.2     │ versicolor (1) │
+│     5.7      │     2.9     │     4.2      │     1.3     │ versicolor (1) │
+│     6.2      │     2.9     │     4.3      │     1.3     │ versicolor (1) │
+│     5.1      │     2.5     │     3.0      │     1.1     │ versicolor (1) │
+│     5.7      │     2.8     │     4.1      │     1.3     │ versicolor (1) │
+│     6.3      │     3.3     │     6.0      │     2.5     │ virginica (2)  │
+│     5.8      │     2.7     │     5.1      │     1.9     │ virginica (2)  │
+│     7.1      │     3.0     │     5.9      │     2.1     │ virginica (2)  │
+│     6.3      │     2.9     │     5.6      │     1.8     │ virginica (2)  │
+│     6.5      │     3.0     │     5.8      │     2.2     │ virginica (2)  │
+│     7.6      │     3.0     │     6.6      │     2.1     │ virginica (2)  │
+│     4.9      │     2.5     │     4.5      │     1.7     │ virginica (2)  │
+│     7.3      │     2.9     │     6.3      │     1.8     │ virginica (2)  │
+│     6.7      │     2.5     │     5.8      │     1.8     │ virginica (2)  │
+│     7.2      │     3.6     │     6.1      │     2.5     │ virginica (2)  │
+│     6.5      │     3.2     │     5.1      │     2.0     │ virginica (2)  │
+│     6.4      │     2.7     │     5.3      │     1.9     │ virginica (2)  │
+│     6.8      │     3.0     │     5.5      │     2.1     │ virginica (2)  │
+│     5.7      │     2.5     │     5.0      │     2.0     │ virginica (2)  │
+│     5.8      │     2.8     │     5.1      │     2.4     │ virginica (2)  │
+│     6.4      │     3.2     │     5.3      │     2.3     │ virginica (2)  │
+│     6.5      │     3.0     │     5.5      │     1.8     │ virginica (2)  │
+│     7.7      │     3.8     │     6.7      │     2.2     │ virginica (2)  │
+│     7.7      │     2.6     │     6.9      │     2.3     │ virginica (2)  │
+│     6.0      │     2.2     │     5.0      │     1.5     │ virginica (2)  │
+│     6.9      │     3.2     │     5.7      │     2.3     │ virginica (2)  │
+│     5.6      │     2.8     │     4.9      │     2.0     │ virginica (2)  │
+│     7.7      │     2.8     │     6.7      │     2.0     │ virginica (2)  │
+│     6.3      │     2.7     │     4.9      │     1.8     │ virginica (2)  │
+│     6.7      │     3.3     │     5.7      │     2.1     │ virginica (2)  │
+│     7.2      │     3.2     │     6.0      │     1.8     │ virginica (2)  │
+│     6.2      │     2.8     │     4.8      │     1.8     │ virginica (2)  │
+│     6.1      │     3.0     │     4.9      │     1.8     │ virginica (2)  │
+│     6.4      │     2.8     │     5.6      │     2.1     │ virginica (2)  │
+│     7.2      │     3.0     │     5.8      │     1.6     │ virginica (2)  │
+│     7.4      │     2.8     │     6.1      │     1.9     │ virginica (2)  │
+│     7.9      │     3.8     │     6.4      │     2.0     │ virginica (2)  │
+│     6.4      │     2.8     │     5.6      │     2.2     │ virginica (2)  │
+│     6.3      │     2.8     │     5.1      │     1.5     │ virginica (2)  │
+│     6.1      │     2.6     │     5.6      │     1.4     │ virginica (2)  │
+│     7.7      │     3.0     │     6.1      │     2.3     │ virginica (2)  │
+│     6.3      │     3.4     │     5.6      │     2.4     │ virginica (2)  │
+│     6.4      │     3.1     │     5.5      │     1.8     │ virginica (2)  │
+│     6.0      │     3.0     │     4.8      │     1.8     │ virginica (2)  │
+│     6.9      │     3.1     │     5.4      │     2.1     │ virginica (2)  │
+│     6.7      │     3.1     │     5.6      │     2.4     │ virginica (2)  │
+│     6.9      │     3.1     │     5.1      │     2.3     │ virginica (2)  │
+│     5.8      │     2.7     │     5.1      │     1.9     │ virginica (2)  │
+│     6.8      │     3.2     │     5.9      │     2.3     │ virginica (2)  │
+│     6.7      │     3.3     │     5.7      │     2.5     │ virginica (2)  │
+│     6.7      │     3.0     │     5.2      │     2.3     │ virginica (2)  │
+│     6.3      │     2.5     │     5.0      │     1.9     │ virginica (2)  │
+│     6.5      │     3.0     │     5.2      │     2.0     │ virginica (2)  │
+│     6.2      │     3.4     │     5.4      │     2.3     │ virginica (2)  │
+│     5.9      │     3.0     │     5.1      │     1.8     │ virginica (2)  │
+└──────────────┴─────────────┴──────────────┴─────────────┴────────────────┘
+
+Data type: numeric
+Data type: numeric
+Data type: numeric
+Data type: numeric
+Data type: categorical
+Row count: 5
+Order: 0
+┌──────────────┬─────────────┬──────────────┬─────────────┬────────────────┐
+│ sepal_length │ sepal_width │ petal_length │ petal_width │    species     │
+├──────────────┼─────────────┼──────────────┼─────────────┼────────────────┤
+│     6.7      │     3.0     │     5.2      │     2.3     │ virginica (2)  │
+│     6.3      │     2.5     │     5.0      │     1.9     │ virginica (2)  │
+│     6.5      │     3.0     │     5.2      │     2.0     │ virginica (2)  │
+│     6.2      │     3.4     │     5.4      │     2.3     │ virginica (2)  │
+│     5.9      │     3.0     │     5.1      │     1.8     │ virginica (2)  │
+└──────────────┴─────────────┴──────────────┴─────────────┴────────────────┘
+
+---------------------------------------------
+Finished test 1!
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Beginning test 2 (Read data separately)...
+---------------------------------------------
+Before calling read...
+Your iris headers are:
+  None
+and should be:
+  None (or []).
+
+Reading data from file: data/iris.csv
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+After calling read...
+Your file path is:
+  data/iris.csv
+and should be:
+  data/iris.csv
+
+Your iris headers are
+  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+and should be
+  ['sepal_length', 'sepal_width', 'petal_length', 'petal_width', 'species']
+
+Your iris variable name-to-column mapping is
+  {'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3, 'species': 4}
+and should be
+  {'sepal_length': 0, 'sepal_width': 1, 'petal_length': 2, 'petal_width': 3, 'species': 4}
+
+Your iris categorical variable name-to-level mapping is
+  {'species': ['setosa', 'versicolor', 'virginica']}
+and should be
+  {'species': ['setosa', 'versicolor', 'virginica']}
+
+Your data is a ndarray? True
+Your data has 150 samples and 5 variables/dimensions.
+It should have 150 samples and 5 variables/dimensions.
+Row count: 150
+Order: 2
+┌──────────────┬─────────────┬──────────────┬─────────────┬────────────────┐
+│ sepal_length │ sepal_width │ petal_length │ petal_width │    species     │
+├──────────────┼─────────────┼──────────────┼─────────────┼────────────────┤
+│     5.1      │     3.5     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.0     │     1.4      │     0.2     │   setosa (0)   │
+│     4.7      │     3.2     │     1.3      │     0.2     │   setosa (0)   │
+│     4.6      │     3.1     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.6     │     1.4      │     0.2     │   setosa (0)   │
+│     5.4      │     3.9     │     1.7      │     0.4     │   setosa (0)   │
+│     4.6      │     3.4     │     1.4      │     0.3     │   setosa (0)   │
+│     5.0      │     3.4     │     1.5      │     0.2     │   setosa (0)   │
+│     4.4      │     2.9     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.1     │     1.5      │     0.1     │   setosa (0)   │
+│     5.4      │     3.7     │     1.5      │     0.2     │   setosa (0)   │
+│     4.8      │     3.4     │     1.6      │     0.2     │   setosa (0)   │
+│     4.8      │     3.0     │     1.4      │     0.1     │   setosa (0)   │
+│     4.3      │     3.0     │     1.1      │     0.1     │   setosa (0)   │
+│     5.8      │     4.0     │     1.2      │     0.2     │   setosa (0)   │
+│     5.7      │     4.4     │     1.5      │     0.4     │   setosa (0)   │
+│     5.4      │     3.9     │     1.3      │     0.4     │   setosa (0)   │
+│     5.1      │     3.5     │     1.4      │     0.3     │   setosa (0)   │
+│     5.7      │     3.8     │     1.7      │     0.3     │   setosa (0)   │
+│     5.1      │     3.8     │     1.5      │     0.3     │   setosa (0)   │
+│     5.4      │     3.4     │     1.7      │     0.2     │   setosa (0)   │
+│     5.1      │     3.7     │     1.5      │     0.4     │   setosa (0)   │
+│     4.6      │     3.6     │     1.0      │     0.2     │   setosa (0)   │
+│     5.1      │     3.3     │     1.7      │     0.5     │   setosa (0)   │
+│     4.8      │     3.4     │     1.9      │     0.2     │   setosa (0)   │
+│     5.0      │     3.0     │     1.6      │     0.2     │   setosa (0)   │
+│     5.0      │     3.4     │     1.6      │     0.4     │   setosa (0)   │
+│     5.2      │     3.5     │     1.5      │     0.2     │   setosa (0)   │
+│     5.2      │     3.4     │     1.4      │     0.2     │   setosa (0)   │
+│     4.7      │     3.2     │     1.6      │     0.2     │   setosa (0)   │
+│     4.8      │     3.1     │     1.6      │     0.2     │   setosa (0)   │
+│     5.4      │     3.4     │     1.5      │     0.4     │   setosa (0)   │
+│     5.2      │     4.1     │     1.5      │     0.1     │   setosa (0)   │
+│     5.5      │     4.2     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.1     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.2     │     1.2      │     0.2     │   setosa (0)   │
+│     5.5      │     3.5     │     1.3      │     0.2     │   setosa (0)   │
+│     4.9      │     3.6     │     1.4      │     0.1     │   setosa (0)   │
+│     4.4      │     3.0     │     1.3      │     0.2     │   setosa (0)   │
+│     5.1      │     3.4     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.5     │     1.3      │     0.3     │   setosa (0)   │
+│     4.5      │     2.3     │     1.3      │     0.3     │   setosa (0)   │
+│     4.4      │     3.2     │     1.3      │     0.2     │   setosa (0)   │
+│     5.0      │     3.5     │     1.6      │     0.6     │   setosa (0)   │
+│     5.1      │     3.8     │     1.9      │     0.4     │   setosa (0)   │
+│     4.8      │     3.0     │     1.4      │     0.3     │   setosa (0)   │
+│     5.1      │     3.8     │     1.6      │     0.2     │   setosa (0)   │
+│     4.6      │     3.2     │     1.4      │     0.2     │   setosa (0)   │
+│     5.3      │     3.7     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.3     │     1.4      │     0.2     │   setosa (0)   │
+│     7.0      │     3.2     │     4.7      │     1.4     │ versicolor (1) │
+│     6.4      │     3.2     │     4.5      │     1.5     │ versicolor (1) │
+│     6.9      │     3.1     │     4.9      │     1.5     │ versicolor (1) │
+│     5.5      │     2.3     │     4.0      │     1.3     │ versicolor (1) │
+│     6.5      │     2.8     │     4.6      │     1.5     │ versicolor (1) │
+│     5.7      │     2.8     │     4.5      │     1.3     │ versicolor (1) │
+│     6.3      │     3.3     │     4.7      │     1.6     │ versicolor (1) │
+│     4.9      │     2.4     │     3.3      │     1.0     │ versicolor (1) │
+│     6.6      │     2.9     │     4.6      │     1.3     │ versicolor (1) │
+│     5.2      │     2.7     │     3.9      │     1.4     │ versicolor (1) │
+│     5.0      │     2.0     │     3.5      │     1.0     │ versicolor (1) │
+│     5.9      │     3.0     │     4.2      │     1.5     │ versicolor (1) │
+│     6.0      │     2.2     │     4.0      │     1.0     │ versicolor (1) │
+│     6.1      │     2.9     │     4.7      │     1.4     │ versicolor (1) │
+│     5.6      │     2.9     │     3.6      │     1.3     │ versicolor (1) │
+│     6.7      │     3.1     │     4.4      │     1.4     │ versicolor (1) │
+│     5.6      │     3.0     │     4.5      │     1.5     │ versicolor (1) │
+│     5.8      │     2.7     │     4.1      │     1.0     │ versicolor (1) │
+│     6.2      │     2.2     │     4.5      │     1.5     │ versicolor (1) │
+│     5.6      │     2.5     │     3.9      │     1.1     │ versicolor (1) │
+│     5.9      │     3.2     │     4.8      │     1.8     │ versicolor (1) │
+│     6.1      │     2.8     │     4.0      │     1.3     │ versicolor (1) │
+│     6.3      │     2.5     │     4.9      │     1.5     │ versicolor (1) │
+│     6.1      │     2.8     │     4.7      │     1.2     │ versicolor (1) │
+│     6.4      │     2.9     │     4.3      │     1.3     │ versicolor (1) │
+│     6.6      │     3.0     │     4.4      │     1.4     │ versicolor (1) │
+│     6.8      │     2.8     │     4.8      │     1.4     │ versicolor (1) │
+│     6.7      │     3.0     │     5.0      │     1.7     │ versicolor (1) │
+│     6.0      │     2.9     │     4.5      │     1.5     │ versicolor (1) │
+│     5.7      │     2.6     │     3.5      │     1.0     │ versicolor (1) │
+│     5.5      │     2.4     │     3.8      │     1.1     │ versicolor (1) │
+│     5.5      │     2.4     │     3.7      │     1.0     │ versicolor (1) │
+│     5.8      │     2.7     │     3.9      │     1.2     │ versicolor (1) │
+│     6.0      │     2.7     │     5.1      │     1.6     │ versicolor (1) │
+│     5.4      │     3.0     │     4.5      │     1.5     │ versicolor (1) │
+│     6.0      │     3.4     │     4.5      │     1.6     │ versicolor (1) │
+│     6.7      │     3.1     │     4.7      │     1.5     │ versicolor (1) │
+│     6.3      │     2.3     │     4.4      │     1.3     │ versicolor (1) │
+│     5.6      │     3.0     │     4.1      │     1.3     │ versicolor (1) │
+│     5.5      │     2.5     │     4.0      │     1.3     │ versicolor (1) │
+│     5.5      │     2.6     │     4.4      │     1.2     │ versicolor (1) │
+│     6.1      │     3.0     │     4.6      │     1.4     │ versicolor (1) │
+│     5.8      │     2.6     │     4.0      │     1.2     │ versicolor (1) │
+│     5.0      │     2.3     │     3.3      │     1.0     │ versicolor (1) │
+│     5.6      │     2.7     │     4.2      │     1.3     │ versicolor (1) │
+│     5.7      │     3.0     │     4.2      │     1.2     │ versicolor (1) │
+│     5.7      │     2.9     │     4.2      │     1.3     │ versicolor (1) │
+│     6.2      │     2.9     │     4.3      │     1.3     │ versicolor (1) │
+│     5.1      │     2.5     │     3.0      │     1.1     │ versicolor (1) │
+│     5.7      │     2.8     │     4.1      │     1.3     │ versicolor (1) │
+│     6.3      │     3.3     │     6.0      │     2.5     │ virginica (2)  │
+│     5.8      │     2.7     │     5.1      │     1.9     │ virginica (2)  │
+│     7.1      │     3.0     │     5.9      │     2.1     │ virginica (2)  │
+│     6.3      │     2.9     │     5.6      │     1.8     │ virginica (2)  │
+│     6.5      │     3.0     │     5.8      │     2.2     │ virginica (2)  │
+│     7.6      │     3.0     │     6.6      │     2.1     │ virginica (2)  │
+│     4.9      │     2.5     │     4.5      │     1.7     │ virginica (2)  │
+│     7.3      │     2.9     │     6.3      │     1.8     │ virginica (2)  │
+│     6.7      │     2.5     │     5.8      │     1.8     │ virginica (2)  │
+│     7.2      │     3.6     │     6.1      │     2.5     │ virginica (2)  │
+│     6.5      │     3.2     │     5.1      │     2.0     │ virginica (2)  │
+│     6.4      │     2.7     │     5.3      │     1.9     │ virginica (2)  │
+│     6.8      │     3.0     │     5.5      │     2.1     │ virginica (2)  │
+│     5.7      │     2.5     │     5.0      │     2.0     │ virginica (2)  │
+│     5.8      │     2.8     │     5.1      │     2.4     │ virginica (2)  │
+│     6.4      │     3.2     │     5.3      │     2.3     │ virginica (2)  │
+│     6.5      │     3.0     │     5.5      │     1.8     │ virginica (2)  │
+│     7.7      │     3.8     │     6.7      │     2.2     │ virginica (2)  │
+│     7.7      │     2.6     │     6.9      │     2.3     │ virginica (2)  │
+│     6.0      │     2.2     │     5.0      │     1.5     │ virginica (2)  │
+│     6.9      │     3.2     │     5.7      │     2.3     │ virginica (2)  │
+│     5.6      │     2.8     │     4.9      │     2.0     │ virginica (2)  │
+│     7.7      │     2.8     │     6.7      │     2.0     │ virginica (2)  │
+│     6.3      │     2.7     │     4.9      │     1.8     │ virginica (2)  │
+│     6.7      │     3.3     │     5.7      │     2.1     │ virginica (2)  │
+│     7.2      │     3.2     │     6.0      │     1.8     │ virginica (2)  │
+│     6.2      │     2.8     │     4.8      │     1.8     │ virginica (2)  │
+│     6.1      │     3.0     │     4.9      │     1.8     │ virginica (2)  │
+│     6.4      │     2.8     │     5.6      │     2.1     │ virginica (2)  │
+│     7.2      │     3.0     │     5.8      │     1.6     │ virginica (2)  │
+│     7.4      │     2.8     │     6.1      │     1.9     │ virginica (2)  │
+│     7.9      │     3.8     │     6.4      │     2.0     │ virginica (2)  │
+│     6.4      │     2.8     │     5.6      │     2.2     │ virginica (2)  │
+│     6.3      │     2.8     │     5.1      │     1.5     │ virginica (2)  │
+│     6.1      │     2.6     │     5.6      │     1.4     │ virginica (2)  │
+│     7.7      │     3.0     │     6.1      │     2.3     │ virginica (2)  │
+│     6.3      │     3.4     │     5.6      │     2.4     │ virginica (2)  │
+│     6.4      │     3.1     │     5.5      │     1.8     │ virginica (2)  │
+│     6.0      │     3.0     │     4.8      │     1.8     │ virginica (2)  │
+│     6.9      │     3.1     │     5.4      │     2.1     │ virginica (2)  │
+│     6.7      │     3.1     │     5.6      │     2.4     │ virginica (2)  │
+│     6.9      │     3.1     │     5.1      │     2.3     │ virginica (2)  │
+│     5.8      │     2.7     │     5.1      │     1.9     │ virginica (2)  │
+│     6.8      │     3.2     │     5.9      │     2.3     │ virginica (2)  │
+│     6.7      │     3.3     │     5.7      │     2.5     │ virginica (2)  │
+│     6.7      │     3.0     │     5.2      │     2.3     │ virginica (2)  │
+│     6.3      │     2.5     │     5.0      │     1.9     │ virginica (2)  │
+│     6.5      │     3.0     │     5.2      │     2.0     │ virginica (2)  │
+│     6.2      │     3.4     │     5.4      │     2.3     │ virginica (2)  │
+│     5.9      │     3.0     │     5.1      │     1.8     │ virginica (2)  │
+└──────────────┴─────────────┴──────────────┴─────────────┴────────────────┘
+
+Data type: numeric
+Data type: numeric
+Data type: numeric
+Data type: numeric
+Data type: categorical
+Row count: 5
+Order: 0
+┌──────────────┬─────────────┬──────────────┬─────────────┬────────────────┐
+│ sepal_length │ sepal_width │ petal_length │ petal_width │    species     │
+├──────────────┼─────────────┼──────────────┼─────────────┼────────────────┤
+│     6.7      │     3.0     │     5.2      │     2.3     │ virginica (2)  │
+│     6.3      │     2.5     │     5.0      │     1.9     │ virginica (2)  │
+│     6.5      │     3.0     │     5.2      │     2.0     │ virginica (2)  │
+│     6.2      │     3.4     │     5.4      │     2.3     │ virginica (2)  │
+│     5.9      │     3.0     │     5.1      │     1.8     │ virginica (2)  │
+└──────────────┴─────────────┴──────────────┴─────────────┴────────────────┘
+
+---------------------------------------------
+Finished test 2!
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Beginning test 3 (Data with spaces)...
+---------------------------------------------
+Reading data from file: data/test_data_spaces.csv
+Invalid data type: string
+Ignoring Column.
+
+Invalid data type: string
+Ignoring Column.
+
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Your test data looks like:
+ [[ 1.  2.  3.  4.]
+ [ 5.  6.  7.  8.]
+ [ 9. 10. 11. 12.]]
+You should see:
+Your test data looks like:
+ [[ 1.  2.  3.  4.]
+ [ 5.  6.  7.  8.]
+ [ 9. 10. 11. 12.]]
+Pay attention to the data type! The numbers should be floats (not have quotes around them).
+---------------------------------------------
+Finished test 3!
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Beginning test 4 (Data with spaces, multiple numeric and categorical variables)...
+---------------------------------------------
+Reading data from file: data/test_data_mixed_spaces.csv
+Invalid data type: string
+Ignoring Column.
+
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Your file path is:
+  data/test_data_mixed_spaces.csv
+and should be:
+  data/test_data_mixed_spaces.csv
+
+Your headers are
+  ['age', 'fav_color', 'shoe_size', 'height', 'fav_pastime', 'spirit_animal', 'fav_food']
+and should be
+  ['age', 'fav_color', 'shoe_size', 'height', 'fav_pastime', 'spirit_animal', 'fav_food']
+
+Your variable name-to-column mapping is
+  {'age': 0, 'fav_color': 1, 'shoe_size': 2, 'height': 3, 'fav_pastime': 4, 'spirit_animal': 5, 'fav_food': 6}
+and should be
+  {'age': 0, 'fav_color': 1, 'shoe_size': 2, 'height': 3, 'fav_pastime': 4, 'spirit_animal': 5, 'fav_food': 6}
+
+Your categorical variable name-to-level mapping is
+  fav_color: ['Purple', 'Yellow', 'Black']
+  fav_pastime: ['Painting with Toes', 'Sock Puppetry', 'Stilt Walking']
+  spirit_animal: ['Penguin', 'Koala', 'Frog']
+  fav_food: ['Pizza', 'Broccoli', 'Spaghetti', 'Pineapple']
+and should be
+  fav_color : ['Purple', 'Yellow', 'Black']
+  fav_pastime : ['Painting with Toes', 'Sock Puppetry', 'Stilt Walking']
+  spirit_animal : ['Penguin', 'Koala', 'Frog']
+  fav_food : ['Pizza', 'Broccoli', 'Spaghetti', 'Pineapple']
+          
+Your test data looks like:
+ [[ 30.    0.    7.5 160.    0.    0.    0. ]
+ [ 22.    1.    9.  175.    0.    1.    1. ]
+ [ 25.    0.   10.5 180.    0.    0.    1. ]
+ [ 28.    1.    6.5 155.    1.    1.    1. ]
+ [ 35.    0.    8.  170.    1.    2.    2. ]
+ [ 29.    1.    7.  165.    1.    2.    0. ]
+ [ 31.    0.   11.  185.    2.    0.    1. ]
+ [ 27.    1.    6.  158.    2.    1.    2. ]
+ [ 23.    2.    7.5 162.    2.    2.    3. ]]
+You should see:
+Your test data looks like:
+ [[ 30.    0.    7.5 160.    0.    0.    0. ]
+ [ 22.    1.    9.  175.    0.    1.    1. ]
+ [ 25.    0.   10.5 180.    0.    0.    1. ]
+ [ 28.    1.    6.5 155.    1.    1.    1. ]
+ [ 35.    0.    8.  170.    1.    2.    2. ]
+ [ 29.    1.    7.  165.    1.    2.    0. ]
+ [ 31.    0.   11.  185.    2.    0.    1. ]
+ [ 27.    1.    6.  158.    2.    1.    2. ]
+ [ 23.    2.    7.5 162.    2.    2.    3. ]]
+Extra TEST: 
+Row count: 9
+Order: 0
+┌──────┬────────────┬───────────┬────────┬────────────────────────┬───────────────┬───────────────┐
+│ age  │ fav_color  │ shoe_size │ height │      fav_pastime       │ spirit_animal │   fav_food    │
+├──────┼────────────┼───────────┼────────┼────────────────────────┼───────────────┼───────────────┤
+│ 30.0 │ Purple (0) │    7.5    │ 160.0  │ Painting with Toes (0) │  Penguin (0)  │   Pizza (0)   │
+│ 22.0 │ Yellow (1) │    9.0    │ 175.0  │ Painting with Toes (0) │   Koala (1)   │ Broccoli (1)  │
+│ 25.0 │ Purple (0) │   10.5    │ 180.0  │ Painting with Toes (0) │  Penguin (0)  │ Broccoli (1)  │
+│ 28.0 │ Yellow (1) │    6.5    │ 155.0  │   Sock Puppetry (1)    │   Koala (1)   │ Broccoli (1)  │
+│ 35.0 │ Purple (0) │    8.0    │ 170.0  │   Sock Puppetry (1)    │   Frog (2)    │ Spaghetti (2) │
+│ 29.0 │ Yellow (1) │    7.0    │ 165.0  │   Sock Puppetry (1)    │   Frog (2)    │   Pizza (0)   │
+│ 31.0 │ Purple (0) │   11.0    │ 185.0  │   Stilt Walking (2)    │  Penguin (0)  │ Broccoli (1)  │
+│ 27.0 │ Yellow (1) │    6.0    │ 158.0  │   Stilt Walking (2)    │   Koala (1)   │ Spaghetti (2) │
+│ 23.0 │ Black (2)  │    7.5    │ 162.0  │   Stilt Walking (2)    │   Frog (2)    │ Pineapple (3) │
+└──────┴────────────┴───────────┴────────┴────────────────────────┴───────────────┴───────────────┘
+
+Data type: numeric
+Data type: categorical
+Data type: numeric
+Data type: numeric
+Data type: categorical
+Data type: categorical
+Data type: categorical
+Row count: 9
+Order: 0
+┌──────┬────────────┬───────────┬────────┬────────────────────────┬───────────────┬───────────────┐
+│ age  │ fav_color  │ shoe_size │ height │      fav_pastime       │ spirit_animal │   fav_food    │
+├──────┼────────────┼───────────┼────────┼────────────────────────┼───────────────┼───────────────┤
+│ 30.0 │ Purple (0) │    7.5    │ 160.0  │ Painting with Toes (0) │  Penguin (0)  │   Pizza (0)   │
+│ 22.0 │ Yellow (1) │    9.0    │ 175.0  │ Painting with Toes (0) │   Koala (1)   │ Broccoli (1)  │
+│ 25.0 │ Purple (0) │   10.5    │ 180.0  │ Painting with Toes (0) │  Penguin (0)  │ Broccoli (1)  │
+│ 28.0 │ Yellow (1) │    6.5    │ 155.0  │   Sock Puppetry (1)    │   Koala (1)   │ Broccoli (1)  │
+│ 35.0 │ Purple (0) │    8.0    │ 170.0  │   Sock Puppetry (1)    │   Frog (2)    │ Spaghetti (2) │
+│ 29.0 │ Yellow (1) │    7.0    │ 165.0  │   Sock Puppetry (1)    │   Frog (2)    │   Pizza (0)   │
+│ 31.0 │ Purple (0) │   11.0    │ 185.0  │   Stilt Walking (2)    │  Penguin (0)  │ Broccoli (1)  │
+│ 27.0 │ Yellow (1) │    6.0    │ 158.0  │   Stilt Walking (2)    │   Koala (1)   │ Spaghetti (2) │
+│ 23.0 │ Black (2)  │    7.5    │ 162.0  │   Stilt Walking (2)    │   Frog (2)    │ Pineapple (3) │
+└──────┴────────────┴───────────┴────────┴────────────────────────┴───────────────┴───────────────┘
+
+Pay attention to the data type! The numbers should be floats (not have quotes around them).
+---------------------------------------------
+Finished test 4!
+---------------------------------------------------------------------------------------

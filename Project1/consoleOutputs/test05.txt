@@ -1,0 +1,563 @@
+---------------------------------------------------------------------------------------
+Beginning test 1 (Print Iris data)...
+---------------------------------------------
+Reading data from file: data/iris.csv
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Row count: 150
+Order: 2
+┌──────────────┬─────────────┬──────────────┬─────────────┬────────────────┐
+│ sepal_length │ sepal_width │ petal_length │ petal_width │    species     │
+├──────────────┼─────────────┼──────────────┼─────────────┼────────────────┤
+│     5.1      │     3.5     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.0     │     1.4      │     0.2     │   setosa (0)   │
+│     4.7      │     3.2     │     1.3      │     0.2     │   setosa (0)   │
+│     4.6      │     3.1     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.6     │     1.4      │     0.2     │   setosa (0)   │
+│     5.4      │     3.9     │     1.7      │     0.4     │   setosa (0)   │
+│     4.6      │     3.4     │     1.4      │     0.3     │   setosa (0)   │
+│     5.0      │     3.4     │     1.5      │     0.2     │   setosa (0)   │
+│     4.4      │     2.9     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.1     │     1.5      │     0.1     │   setosa (0)   │
+│     5.4      │     3.7     │     1.5      │     0.2     │   setosa (0)   │
+│     4.8      │     3.4     │     1.6      │     0.2     │   setosa (0)   │
+│     4.8      │     3.0     │     1.4      │     0.1     │   setosa (0)   │
+│     4.3      │     3.0     │     1.1      │     0.1     │   setosa (0)   │
+│     5.8      │     4.0     │     1.2      │     0.2     │   setosa (0)   │
+│     5.7      │     4.4     │     1.5      │     0.4     │   setosa (0)   │
+│     5.4      │     3.9     │     1.3      │     0.4     │   setosa (0)   │
+│     5.1      │     3.5     │     1.4      │     0.3     │   setosa (0)   │
+│     5.7      │     3.8     │     1.7      │     0.3     │   setosa (0)   │
+│     5.1      │     3.8     │     1.5      │     0.3     │   setosa (0)   │
+│     5.4      │     3.4     │     1.7      │     0.2     │   setosa (0)   │
+│     5.1      │     3.7     │     1.5      │     0.4     │   setosa (0)   │
+│     4.6      │     3.6     │     1.0      │     0.2     │   setosa (0)   │
+│     5.1      │     3.3     │     1.7      │     0.5     │   setosa (0)   │
+│     4.8      │     3.4     │     1.9      │     0.2     │   setosa (0)   │
+│     5.0      │     3.0     │     1.6      │     0.2     │   setosa (0)   │
+│     5.0      │     3.4     │     1.6      │     0.4     │   setosa (0)   │
+│     5.2      │     3.5     │     1.5      │     0.2     │   setosa (0)   │
+│     5.2      │     3.4     │     1.4      │     0.2     │   setosa (0)   │
+│     4.7      │     3.2     │     1.6      │     0.2     │   setosa (0)   │
+│     4.8      │     3.1     │     1.6      │     0.2     │   setosa (0)   │
+│     5.4      │     3.4     │     1.5      │     0.4     │   setosa (0)   │
+│     5.2      │     4.1     │     1.5      │     0.1     │   setosa (0)   │
+│     5.5      │     4.2     │     1.4      │     0.2     │   setosa (0)   │
+│     4.9      │     3.1     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.2     │     1.2      │     0.2     │   setosa (0)   │
+│     5.5      │     3.5     │     1.3      │     0.2     │   setosa (0)   │
+│     4.9      │     3.6     │     1.4      │     0.1     │   setosa (0)   │
+│     4.4      │     3.0     │     1.3      │     0.2     │   setosa (0)   │
+│     5.1      │     3.4     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.5     │     1.3      │     0.3     │   setosa (0)   │
+│     4.5      │     2.3     │     1.3      │     0.3     │   setosa (0)   │
+│     4.4      │     3.2     │     1.3      │     0.2     │   setosa (0)   │
+│     5.0      │     3.5     │     1.6      │     0.6     │   setosa (0)   │
+│     5.1      │     3.8     │     1.9      │     0.4     │   setosa (0)   │
+│     4.8      │     3.0     │     1.4      │     0.3     │   setosa (0)   │
+│     5.1      │     3.8     │     1.6      │     0.2     │   setosa (0)   │
+│     4.6      │     3.2     │     1.4      │     0.2     │   setosa (0)   │
+│     5.3      │     3.7     │     1.5      │     0.2     │   setosa (0)   │
+│     5.0      │     3.3     │     1.4      │     0.2     │   setosa (0)   │
+│     7.0      │     3.2     │     4.7      │     1.4     │ versicolor (1) │
+│     6.4      │     3.2     │     4.5      │     1.5     │ versicolor (1) │
+│     6.9      │     3.1     │     4.9      │     1.5     │ versicolor (1) │
+│     5.5      │     2.3     │     4.0      │     1.3     │ versicolor (1) │
+│     6.5      │     2.8     │     4.6      │     1.5     │ versicolor (1) │
+│     5.7      │     2.8     │     4.5      │     1.3     │ versicolor (1) │
+│     6.3      │     3.3     │     4.7      │     1.6     │ versicolor (1) │
+│     4.9      │     2.4     │     3.3      │     1.0     │ versicolor (1) │
+│     6.6      │     2.9     │     4.6      │     1.3     │ versicolor (1) │
+│     5.2      │     2.7     │     3.9      │     1.4     │ versicolor (1) │
+│     5.0      │     2.0     │     3.5      │     1.0     │ versicolor (1) │
+│     5.9      │     3.0     │     4.2      │     1.5     │ versicolor (1) │
+│     6.0      │     2.2     │     4.0      │     1.0     │ versicolor (1) │
+│     6.1      │     2.9     │     4.7      │     1.4     │ versicolor (1) │
+│     5.6      │     2.9     │     3.6      │     1.3     │ versicolor (1) │
+│     6.7      │     3.1     │     4.4      │     1.4     │ versicolor (1) │
+│     5.6      │     3.0     │     4.5      │     1.5     │ versicolor (1) │
+│     5.8      │     2.7     │     4.1      │     1.0     │ versicolor (1) │
+│     6.2      │     2.2     │     4.5      │     1.5     │ versicolor (1) │
+│     5.6      │     2.5     │     3.9      │     1.1     │ versicolor (1) │
+│     5.9      │     3.2     │     4.8      │     1.8     │ versicolor (1) │
+│     6.1      │     2.8     │     4.0      │     1.3     │ versicolor (1) │
+│     6.3      │     2.5     │     4.9      │     1.5     │ versicolor (1) │
+│     6.1      │     2.8     │     4.7      │     1.2     │ versicolor (1) │
+│     6.4      │     2.9     │     4.3      │     1.3     │ versicolor (1) │
+│     6.6      │     3.0     │     4.4      │     1.4     │ versicolor (1) │
+│     6.8      │     2.8     │     4.8      │     1.4     │ versicolor (1) │
+│     6.7      │     3.0     │     5.0      │     1.7     │ versicolor (1) │
+│     6.0      │     2.9     │     4.5      │     1.5     │ versicolor (1) │
+│     5.7      │     2.6     │     3.5      │     1.0     │ versicolor (1) │
+│     5.5      │     2.4     │     3.8      │     1.1     │ versicolor (1) │
+│     5.5      │     2.4     │     3.7      │     1.0     │ versicolor (1) │
+│     5.8      │     2.7     │     3.9      │     1.2     │ versicolor (1) │
+│     6.0      │     2.7     │     5.1      │     1.6     │ versicolor (1) │
+│     5.4      │     3.0     │     4.5      │     1.5     │ versicolor (1) │
+│     6.0      │     3.4     │     4.5      │     1.6     │ versicolor (1) │
+│     6.7      │     3.1     │     4.7      │     1.5     │ versicolor (1) │
+│     6.3      │     2.3     │     4.4      │     1.3     │ versicolor (1) │
+│     5.6      │     3.0     │     4.1      │     1.3     │ versicolor (1) │
+│     5.5      │     2.5     │     4.0      │     1.3     │ versicolor (1) │
+│     5.5      │     2.6     │     4.4      │     1.2     │ versicolor (1) │
+│     6.1      │     3.0     │     4.6      │     1.4     │ versicolor (1) │
+│     5.8      │     2.6     │     4.0      │     1.2     │ versicolor (1) │
+│     5.0      │     2.3     │     3.3      │     1.0     │ versicolor (1) │
+│     5.6      │     2.7     │     4.2      │     1.3     │ versicolor (1) │
+│     5.7      │     3.0     │     4.2      │     1.2     │ versicolor (1) │
+│     5.7      │     2.9     │     4.2      │     1.3     │ versicolor (1) │
+│     6.2      │     2.9     │     4.3      │     1.3     │ versicolor (1) │
+│     5.1      │     2.5     │     3.0      │     1.1     │ versicolor (1) │
+│     5.7      │     2.8     │     4.1      │     1.3     │ versicolor (1) │
+│     6.3      │     3.3     │     6.0      │     2.5     │ virginica (2)  │
+│     5.8      │     2.7     │     5.1      │     1.9     │ virginica (2)  │
+│     7.1      │     3.0     │     5.9      │     2.1     │ virginica (2)  │
+│     6.3      │     2.9     │     5.6      │     1.8     │ virginica (2)  │
+│     6.5      │     3.0     │     5.8      │     2.2     │ virginica (2)  │
+│     7.6      │     3.0     │     6.6      │     2.1     │ virginica (2)  │
+│     4.9      │     2.5     │     4.5      │     1.7     │ virginica (2)  │
+│     7.3      │     2.9     │     6.3      │     1.8     │ virginica (2)  │
+│     6.7      │     2.5     │     5.8      │     1.8     │ virginica (2)  │
+│     7.2      │     3.6     │     6.1      │     2.5     │ virginica (2)  │
+│     6.5      │     3.2     │     5.1      │     2.0     │ virginica (2)  │
+│     6.4      │     2.7     │     5.3      │     1.9     │ virginica (2)  │
+│     6.8      │     3.0     │     5.5      │     2.1     │ virginica (2)  │
+│     5.7      │     2.5     │     5.0      │     2.0     │ virginica (2)  │
+│     5.8      │     2.8     │     5.1      │     2.4     │ virginica (2)  │
+│     6.4      │     3.2     │     5.3      │     2.3     │ virginica (2)  │
+│     6.5      │     3.0     │     5.5      │     1.8     │ virginica (2)  │
+│     7.7      │     3.8     │     6.7      │     2.2     │ virginica (2)  │
+│     7.7      │     2.6     │     6.9      │     2.3     │ virginica (2)  │
+│     6.0      │     2.2     │     5.0      │     1.5     │ virginica (2)  │
+│     6.9      │     3.2     │     5.7      │     2.3     │ virginica (2)  │
+│     5.6      │     2.8     │     4.9      │     2.0     │ virginica (2)  │
+│     7.7      │     2.8     │     6.7      │     2.0     │ virginica (2)  │
+│     6.3      │     2.7     │     4.9      │     1.8     │ virginica (2)  │
+│     6.7      │     3.3     │     5.7      │     2.1     │ virginica (2)  │
+│     7.2      │     3.2     │     6.0      │     1.8     │ virginica (2)  │
+│     6.2      │     2.8     │     4.8      │     1.8     │ virginica (2)  │
+│     6.1      │     3.0     │     4.9      │     1.8     │ virginica (2)  │
+│     6.4      │     2.8     │     5.6      │     2.1     │ virginica (2)  │
+│     7.2      │     3.0     │     5.8      │     1.6     │ virginica (2)  │
+│     7.4      │     2.8     │     6.1      │     1.9     │ virginica (2)  │
+│     7.9      │     3.8     │     6.4      │     2.0     │ virginica (2)  │
+│     6.4      │     2.8     │     5.6      │     2.2     │ virginica (2)  │
+│     6.3      │     2.8     │     5.1      │     1.5     │ virginica (2)  │
+│     6.1      │     2.6     │     5.6      │     1.4     │ virginica (2)  │
+│     7.7      │     3.0     │     6.1      │     2.3     │ virginica (2)  │
+│     6.3      │     3.4     │     5.6      │     2.4     │ virginica (2)  │
+│     6.4      │     3.1     │     5.5      │     1.8     │ virginica (2)  │
+│     6.0      │     3.0     │     4.8      │     1.8     │ virginica (2)  │
+│     6.9      │     3.1     │     5.4      │     2.1     │ virginica (2)  │
+│     6.7      │     3.1     │     5.6      │     2.4     │ virginica (2)  │
+│     6.9      │     3.1     │     5.1      │     2.3     │ virginica (2)  │
+│     5.8      │     2.7     │     5.1      │     1.9     │ virginica (2)  │
+│     6.8      │     3.2     │     5.9      │     2.3     │ virginica (2)  │
+│     6.7      │     3.3     │     5.7      │     2.5     │ virginica (2)  │
+│     6.7      │     3.0     │     5.2      │     2.3     │ virginica (2)  │
+│     6.3      │     2.5     │     5.0      │     1.9     │ virginica (2)  │
+│     6.5      │     3.0     │     5.2      │     2.0     │ virginica (2)  │
+│     6.2      │     3.4     │     5.4      │     2.3     │ virginica (2)  │
+│     5.9      │     3.0     │     5.1      │     1.8     │ virginica (2)  │
+└──────────────┴─────────────┴──────────────┴─────────────┴────────────────┘
+
+You should get something that looks like:
+
+-------------------------------
+data/iris.csv (150x5)
+Headers:
+  sepal_length  sepal_width     petal_length    petal_width     species
+-------------------------------
+Showing first 5/150 rows.
+5.1     3.5     1.4     0.2     0.0
+4.9     3.0     1.4     0.2     0.0
+4.7     3.2     1.3     0.2     0.0
+4.6     3.1     1.5     0.2     0.0
+5.0     3.6     1.4     0.2     0.0
+
+-------------------------------
+    
+---------------------------------------------
+Finished test 1!
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Beginning test 2 (Print Anscombe data)...
+---------------------------------------------
+Reading data from file: data/anscombe.csv
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Row count: 44
+Order: 1
+┌─────────┬──────┬───────┐
+│ dataset │  x   │   y   │
+├─────────┼──────┼───────┤
+│  I (0)  │ 10.0 │ 8.04  │
+│  I (0)  │ 8.0  │ 6.95  │
+│  I (0)  │ 13.0 │ 7.58  │
+│  I (0)  │ 9.0  │ 8.81  │
+│  I (0)  │ 11.0 │ 8.33  │
+│  I (0)  │ 14.0 │ 9.96  │
+│  I (0)  │ 6.0  │ 7.24  │
+│  I (0)  │ 4.0  │ 4.26  │
+│  I (0)  │ 12.0 │ 10.84 │
+│  I (0)  │ 7.0  │ 4.82  │
+│  I (0)  │ 5.0  │ 5.68  │
+│ II (1)  │ 10.0 │ 9.14  │
+│ II (1)  │ 8.0  │ 8.14  │
+│ II (1)  │ 13.0 │ 8.74  │
+│ II (1)  │ 9.0  │ 8.77  │
+│ II (1)  │ 11.0 │ 9.26  │
+│ II (1)  │ 14.0 │  8.1  │
+│ II (1)  │ 6.0  │ 6.13  │
+│ II (1)  │ 4.0  │  3.1  │
+│ II (1)  │ 12.0 │ 9.13  │
+│ II (1)  │ 7.0  │ 7.26  │
+│ II (1)  │ 5.0  │ 4.74  │
+│ III (2) │ 10.0 │ 7.46  │
+│ III (2) │ 8.0  │ 6.77  │
+│ III (2) │ 13.0 │ 12.74 │
+│ III (2) │ 9.0  │ 7.11  │
+│ III (2) │ 11.0 │ 7.81  │
+│ III (2) │ 14.0 │ 8.84  │
+│ III (2) │ 6.0  │ 6.08  │
+│ III (2) │ 4.0  │ 5.39  │
+│ III (2) │ 12.0 │ 8.15  │
+│ III (2) │ 7.0  │ 6.42  │
+│ III (2) │ 5.0  │ 5.73  │
+│ IV (3)  │ 8.0  │ 6.58  │
+│ IV (3)  │ 8.0  │ 5.76  │
+│ IV (3)  │ 8.0  │ 7.71  │
+│ IV (3)  │ 8.0  │ 8.84  │
+│ IV (3)  │ 8.0  │ 8.47  │
+│ IV (3)  │ 8.0  │ 7.04  │
+│ IV (3)  │ 8.0  │ 5.25  │
+│ IV (3)  │ 19.0 │ 12.5  │
+│ IV (3)  │ 8.0  │ 5.56  │
+│ IV (3)  │ 8.0  │ 7.91  │
+│ IV (3)  │ 8.0  │ 6.89  │
+└─────────┴──────┴───────┘
+
+You should get something that looks like:
+
+-------------------------------
+data/anscombe.csv (44x3)
+Headers:
+  dataset       x       y
+-------------------------------
+Showing first 5/44 rows.
+0.0     10.0    8.04
+0.0     8.0     6.95
+0.0     13.0    7.58
+0.0     9.0     8.81
+0.0     11.0    8.33
+
+-------------------------------
+    
+---------------------------------------------
+Finished test 2!
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Beginning test 3 (Print spaces test data)...
+---------------------------------------------
+Reading data from file: data/test_data_spaces.csv
+Invalid data type: string
+Ignoring Column.
+
+Invalid data type: string
+Ignoring Column.
+
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Row count: 3
+Order: 0
+┌─────────┬────────┬──────┬────────┐
+│ headers │ spaces │ bad  │ places │
+├─────────┼────────┼──────┼────────┤
+│   1.0   │  2.0   │ 3.0  │  4.0   │
+│   5.0   │  6.0   │ 7.0  │  8.0   │
+│   9.0   │  10.0  │ 11.0 │  12.0  │
+└─────────┴────────┴──────┴────────┘
+
+You should get something that looks like:
+
+-------------------------------
+data/test_data_spaces.csv (3x4)
+Headers:
+  headers spaces  bad     places
+-------------------------------
+1.0     2.0     3.0     4.0
+5.0     6.0     7.0     8.0
+9.0     10.0    11.0    12.0
+
+-------------------------------
+    
+---------------------------------------------
+Finished test 3!
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Beginning test 4 (Print complex test data)...
+---------------------------------------------
+Reading data from file: data/test_data_complex.csv
+Invalid data type: string
+Ignoring Column.
+
+Invalid data type: date
+Ignoring Column.
+
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Row count: 15
+Order: 1
+┌────────────┬─────────────┐
+│  catstuff  │ numberstuff │
+├────────────┼─────────────┤
+│ green (0)  │     4.0     │
+│ green (0)  │     3.0     │
+│  blue (1)  │     2.0     │
+│  red (2)   │     1.0     │
+│  red (2)   │     5.0     │
+│  blue (1)  │     6.0     │
+│ yellow (3) │     7.0     │
+│  blue (1)  │     8.0     │
+│  blue (1)  │     9.0     │
+│  red (2)   │    10.0     │
+│ green (0)  │    11.0     │
+│ green (0)  │    15.0     │
+│ yellow (3) │    14.0     │
+│ green (0)  │    13.0     │
+│  red (2)   │    12.0     │
+└────────────┴─────────────┘
+
+You should get something that looks like:
+
+-------------------------------
+data/test_data_complex.csv (15x2)
+Headers:
+  catstuff      numberstuff
+-------------------------------
+Showing first 5/15 rows.
+0.0     4.0
+0.0     3.0
+1.0     2.0
+2.0     1.0
+2.0     5.0
+
+-------------------------------
+    
+---------------------------------------------
+Finished test 4!
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Beginning test 5 (Print Austin Pet data)...
+---------------------------------------------
+Reading data from file: data/austin_pet.csv
+Invalid data type: string
+Ignoring Column.
+
+Invalid data type: string
+Ignoring Column.
+
+Data extracted from file. 
+Now processing data...
+
+Data processing complete!
+
+Row count: 197600
+Order: 5
+String output 0.00%
+String output 0.51%
+String output 1.01%
+String output 1.52%
+String output 2.02%
+String output 2.53%
+String output 3.04%
+String output 3.54%
+String output 4.05%
+String output 4.55%
+String output 5.06%
+String output 5.57%
+String output 6.07%
+String output 6.58%
+String output 7.09%
+String output 7.59%
+String output 8.10%
+String output 8.60%
+String output 9.11%
+String output 9.62%
+String output 10.12%
+String output 10.63%
+String output 11.13%
+String output 11.64%
+String output 12.15%
+String output 12.65%
+String output 13.16%
+String output 13.66%
+String output 14.17%
+String output 14.68%
+String output 15.18%
+String output 15.69%
+String output 16.19%
+String output 16.70%
+String output 17.21%
+String output 17.71%
+String output 18.22%
+String output 18.72%
+String output 19.23%
+String output 19.74%
+String output 20.24%
+String output 20.75%
+String output 21.26%
+String output 21.76%
+String output 22.27%
+String output 22.77%
+String output 23.28%
+String output 23.79%
+String output 24.29%
+String output 24.80%
+String output 25.30%
+String output 25.81%
+String output 26.32%
+String output 26.82%
+String output 27.33%
+String output 27.83%
+String output 28.34%
+String output 28.85%
+String output 29.35%
+String output 29.86%
+String output 30.36%
+String output 30.87%
+String output 31.38%
+String output 31.88%
+String output 32.39%
+String output 32.89%
+String output 33.40%
+String output 33.91%
+String output 34.41%
+String output 34.92%
+String output 35.43%
+String output 35.93%
+String output 36.44%
+String output 36.94%
+String output 37.45%
+String output 37.96%
+String output 38.46%
+String output 38.97%
+String output 39.47%
+String output 39.98%
+String output 40.49%
+String output 40.99%
+String output 41.50%
+String output 42.00%
+String output 42.51%
+String output 43.02%
+String output 43.52%
+String output 44.03%
+String output 44.53%
+String output 45.04%
+String output 45.55%
+String output 46.05%
+String output 46.56%
+String output 47.06%
+String output 47.57%
+String output 48.08%
+String output 48.58%
+String output 49.09%
+String output 49.60%
+String output 50.10%
+String output 50.61%
+String output 51.11%
+String output 51.62%
+String output 52.13%
+String output 52.63%
+String output 53.14%
+String output 53.64%
+String output 54.15%
+String output 54.66%
+String output 55.16%
+String output 55.67%
+String output 56.17%
+String output 56.68%
+String output 57.19%
+String output 57.69%
+String output 58.20%
+String output 58.70%
+String output 59.21%
+String output 59.72%
+String output 60.22%
+String output 60.73%
+String output 61.23%
+String output 61.74%
+String output 62.25%
+String output 62.75%
+String output 63.26%
+String output 63.77%
+String output 64.27%
+String output 64.78%
+String output 65.28%
+String output 65.79%
+String output 66.30%
+String output 66.80%
+String output 67.31%
+String output 67.81%
+String output 68.32%
+String output 68.83%
+String output 69.33%
+String output 69.84%
+String output 70.34%
+String output 70.85%
+String output 71.36%
+String output 71.86%
+String output 72.37%
+String output 72.87%
+String output 73.38%
+String output 73.89%
+String output 74.39%
+String output 74.90%
+String output 75.40%
+String output 75.91%
+String output 76.42%
+String output 76.92%
+String output 77.43%
+String output 77.94%
+String output 78.44%
+String output 78.95%
+String output 79.45%
+String output 79.96%
+String output 80.47%
+String output 80.97%
+String output 81.48%
+String output 81.98%
+String output 82.49%
+String output 83.00%
+String output 83.50%
+String output 84.01%
+String output 84.51%
+String output 85.02%
+String output 85.53%
+String output 86.03%
+String output 86.54%
+String output 87.04%
+String output 87.55%
+String output 88.06%
+String output 88.56%
+String output 89.07%
+String output 89.57%
+String output 90.08%
+String output 90.59%
+String output 91.09%
+String output 91.60%
+String output 92.11%
+String output 92.61%
+String output 93.12%
