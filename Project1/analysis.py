@@ -29,7 +29,7 @@ class Analysis:
         -----------
         data: Data object. Contains all data samples and variables in a dataset.
         '''
-        pass
+        self.data = data
 
     def min(self, headers, rows=[]):
         '''Computes the minimum of each variable in `headers` in the data object.
@@ -50,7 +50,8 @@ class Analysis:
 
         NOTE: There should be no loops in this method!
         '''
-        pass
+        data_selection = self.data.select_data(headers, rows)
+        return np.min(data_selection, axis=0)
 
     def max(self, headers, rows=[]):
         '''Computes the maximum of each variable in `headers` in the data object.
@@ -70,7 +71,8 @@ class Analysis:
 
         NOTE: There should be no loops in this method!
         '''
-        pass
+        data_selection = self.data.select_data(headers, rows)
+        return np.max(data_selection, axis=0)
 
     def range(self, headers, rows=[]):
         '''Computes the range [min, max] for each variable in `headers` in the data object.
@@ -92,7 +94,8 @@ class Analysis:
 
         NOTE: There should be no loops in this method!
         '''
-        pass
+        data_selection = self.data.select_data(headers, rows)
+        return [np.min(data_selection, axis=0), np.max(data_selection, axis=0)]
 
     def mean(self, headers, rows=[]):
         '''Computes the mean for each variable in `headers` in the data object.
@@ -113,7 +116,12 @@ class Analysis:
         NOTE: You CANNOT use np.mean here!
         NOTE: There should be no loops in this method!
         '''
-        pass
+        data_selection = self.data.select_data(headers, rows)
+        height = data_selection.shape[0]
+        print(height)
+        identity_vector = np.vectorize()
+        sums = data_selection
+        return np.mean(data_selection, axis=0)
 
     def var(self, headers, rows=[]):
         '''Computes the variance for each variable in `headers` in the data object.
