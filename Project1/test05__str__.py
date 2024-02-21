@@ -123,7 +123,8 @@ Showing first 5/197600 rows.
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'True':
+    arg_state = sys.argv[1] if len(sys.argv) > 1 else 'False'
+    if arg_state == 'True':
         sys.stdout = open('consoleOutputs/test05.txt', 'w+', encoding="utf-8")
     print('---------------------------------------------------------------------------------------')
     print('Beginning test 1 (Print Iris data)...')
@@ -169,5 +170,5 @@ if __name__ == '__main__':
     print('---------------------------------------------')
     print('Finished test 5!')
     print('---------------------------------------------------------------------------------------')
-    if sys.argv[1] == 'True':
+    if arg_state == 'True':
         sys.stdout.close()

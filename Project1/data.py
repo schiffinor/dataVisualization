@@ -6,13 +6,15 @@ CS 251: Data Analysis and Visualization
 Spring 2024
 """
 
-import dateutil.parser as d_parse
-import numpy as np
-from dataTypes import DataTypes as dT
-from dataTypesTrim import DataTypes as dTT
-import matrix as m
 import math
 from typing import List, Dict
+
+import dateutil.parser as d_parse
+import numpy as np
+
+import matrix as m
+from dataTypes import DataTypes as dT
+from dataTypesTrim import DataTypes as dTT
 
 
 class Data:
@@ -266,7 +268,7 @@ class Data:
         """
         sizes = []
         data_types = []
-        out_string = "┌"
+        out_list = ["┌"]
         for index, word in enumerate(self.headers):
             temp_size = len(word) + 2
             data_type = self.var_data_type[self.whole_header2col[self.col2header[index]]]
@@ -281,19 +283,20 @@ class Data:
                     if len(str(entry)) + 2 > temp_size:
                         temp_size = len(str(entry)) + 2
             sizes.append(temp_size)
-            out_string += temp_size * "─" + "┬"
-        out_string = out_string.rstrip("┬")
-        out_string += "┐\n"
-        out_string += "│"
+            out_list.append(temp_size * "─")
+            out_list.append("┬")
+        out_list.pop(-1)
+        out_list.append("┐\n│")
         for index, word in enumerate(self.headers):
             size = sizes[index]
             sizer = '{:^' + str(size) + '.' + str(size) + '}'
-            out_string += sizer.format(str(word)) + "│"
-        out_string += "\n├"
+            out_list.append(sizer.format(str(word)) + "│")
+        out_list.append("\n├")
         for s in sizes:
-            out_string += s * "─" + "┼"
-        out_string = out_string.rstrip("┼")
-        out_string += "┤\n"
+            out_list.append(s * "─")
+            out_list.append("┼")
+        out_list.pop(-1)
+        out_list.append("┤\n")
         rows = self.data_array.row_set()
         row_count = len(rows)
         order = math.floor(math.log10(row_count))
@@ -303,7 +306,7 @@ class Data:
             if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
                 ratio = ind / row_count
                 print("String output {:.2%}".format(ratio))
-            out_string += "│"
+            out_list.append("│")
             for index, entry in enumerate(row):
                 data_type = data_types[index]
                 fill = entry
@@ -311,14 +314,15 @@ class Data:
                 sizer = '{:^' + str(size) + '.' + str(size) + '}'
                 if data_type.name == "categorical":
                     fill = self.levels2cats_dicts[self.col2header[index]][int(entry)] + " (" + str(entry) + ")"
-                out_string += sizer.format(str(fill)) + "│"
-            out_string += "\n"
-        out_string += "└"
+                out_list.append(sizer.format(str(fill)) + "│")
+            out_list.append("\n")
+        out_list.append("└")
         for s in sizes:
-            out_string += s * "─" + "┴"
-        out_string = out_string.rstrip("┴")
-        out_string += "┘\n"
-        return out_string
+            out_list.append(s * "─")
+            out_list.append("┴")
+        out_list.pop(-1)
+        out_list.append("┘\n")
+        return "".join(out_list)
 
     def get_headers(self):
         """Get list of header names (all variables)
@@ -512,12 +516,11 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
 
     sizes = []
     data_types = []
-    out_string = "┌"
+    out_list = ["┌"]
     for index, word in enumerate(headers):
         temp_size = len(word) + 2
         data_type = var_data_type[index]
         data_types.append(data_type)
-        print("Data type: {}".format(data_type.name))
         if data_type.name == "categorical":
             for category in cats2level_dicts[word].keys():
                 new_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
@@ -528,19 +531,20 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
                 if len(str(entry)) + 2 > temp_size:
                     temp_size = len(str(entry)) + 2
         sizes.append(temp_size)
-        out_string += temp_size * "─" + "┬"
-    out_string = out_string.rstrip("┬")
-    out_string += "┐\n"
-    out_string += "│"
+        out_list.append(temp_size * "─")
+        out_list.append("┬")
+    out_list.pop(-1)
+    out_list.append("┐\n│")
     for index, word in enumerate(headers):
         size = sizes[index]
         sizer = '{:^' + str(size) + '.' + str(size) + '}'
-        out_string += sizer.format(str(word)) + "│"
-    out_string += "\n├"
+        out_list.append(sizer.format(str(word)) + "│")
+    out_list.append("\n├")
     for s in sizes:
-        out_string += s * "─" + "┼"
-    out_string = out_string.rstrip("┼")
-    out_string += "┤\n"
+        out_list.append(s * "─")
+        out_list.append("┼")
+    out_list.pop(-1)
+    out_list.append("┤\n")
     rows = data_array.row_set()
     row_count = len(rows)
     order = math.floor(math.log10(row_count))
@@ -551,7 +555,7 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
         if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
             ratio = ind / row_count
             print("String output {:.2%}".format(ratio))
-        out_string += "│"
+        out_list.append("│")
         for index, entry in enumerate(row):
             data_type = data_types[index]
             fill = entry
@@ -559,14 +563,15 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
             sizer = '{:^' + str(size) + '.' + str(size) + '}'
             if data_type.name == "categorical":
                 fill = levels2cats_dicts[col2header[index]][int(entry)] + " (" + str(int(entry)) + ")"
-            out_string += sizer.format(str(fill)) + "│"
-        out_string += "\n"
-    out_string += "└"
+            out_list.append(sizer.format(str(fill)) + "│")
+        out_list.append("\n")
+    out_list.append("└")
     for s in sizes:
-        out_string += s * "─" + "┴"
-    out_string = out_string.rstrip("┴")
-    out_string += "┘\n"
-    return out_string
+        out_list.append(s * "─")
+        out_list.append("┴")
+    out_list.pop(-1)
+    out_list.append("┘\n")
+    return "".join(out_list)
 
 
 def data2str_source(data: np.ndarray, data_source: Data):
@@ -589,7 +594,6 @@ def data2str_source(data: np.ndarray, data_source: Data):
     data_array = m.Matrix(0, 0, data_output)
     headers = data_source.headers
     var_data_type = data_source.var_data_type
-    whole_header2col = data_source.whole_header2col
     header2col = data_source.header2col
     col2header = data_source.col2header
     cats2level_dicts = data_source.cats2level_dicts
@@ -597,10 +601,10 @@ def data2str_source(data: np.ndarray, data_source: Data):
 
     sizes = []
     data_types = []
-    out_string = "┌"
+    out_list = ["┌"]
     for index, word in enumerate(headers):
         temp_size = len(word) + 2
-        data_type = var_data_type[whole_header2col[col2header[index]]]
+        data_type = var_data_type[index]
         data_types.append(data_type)
         if data_type.name == "categorical":
             for category in cats2level_dicts[word].keys():
@@ -612,19 +616,20 @@ def data2str_source(data: np.ndarray, data_source: Data):
                 if len(str(entry)) + 2 > temp_size:
                     temp_size = len(str(entry)) + 2
         sizes.append(temp_size)
-        out_string += temp_size * "─" + "┬"
-    out_string = out_string.rstrip("┬")
-    out_string += "┐\n"
-    out_string += "│"
+        out_list.append(temp_size * "─")
+        out_list.append("┬")
+    out_list.pop(-1)
+    out_list.append("┐\n│")
     for index, word in enumerate(headers):
         size = sizes[index]
         sizer = '{:^' + str(size) + '.' + str(size) + '}'
-        out_string += sizer.format(str(word)) + "│"
-    out_string += "\n├"
+        out_list.append(sizer.format(str(word)) + "│")
+    out_list.append("\n├")
     for s in sizes:
-        out_string += s * "─" + "┼"
-    out_string = out_string.rstrip("┼")
-    out_string += "┤\n"
+        out_list.append(s * "─")
+        out_list.append("┼")
+    out_list.pop(-1)
+    out_list.append("┤\n")
     rows = data_array.row_set()
     row_count = len(rows)
     order = math.floor(math.log10(row_count))
@@ -634,7 +639,7 @@ def data2str_source(data: np.ndarray, data_source: Data):
         if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
             ratio = ind / row_count
             print("String output {:.2%}".format(ratio))
-        out_string += "│"
+        out_list.append("│")
         for index, entry in enumerate(row):
             data_type = data_types[index]
             fill = entry
@@ -642,11 +647,12 @@ def data2str_source(data: np.ndarray, data_source: Data):
             sizer = '{:^' + str(size) + '.' + str(size) + '}'
             if data_type.name == "categorical":
                 fill = levels2cats_dicts[col2header[index]][int(entry)] + " (" + str(int(entry)) + ")"
-            out_string += sizer.format(str(fill)) + "│"
-        out_string += "\n"
-    out_string += "└"
+            out_list.append(sizer.format(str(fill)) + "│")
+        out_list.append("\n")
+    out_list.append("└")
     for s in sizes:
-        out_string += s * "─" + "┴"
-    out_string = out_string.rstrip("┴")
-    out_string += "┘\n"
-    return out_string
+        out_list.append(s * "─")
+        out_list.append("┴")
+    out_list.pop(-1)
+    out_list.append("┘\n")
+    return "".join(out_list)

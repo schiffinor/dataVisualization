@@ -49,7 +49,8 @@ def read_data_spaces(test_filename):
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'True':
+    arg_state = sys.argv[1] if len(sys.argv) > 1 else 'False'
+    if arg_state == 'True':
         sys.stdout = open('consoleOutputs/test01.txt', 'w+', encoding="utf-8")
     print('---------------------------------------------------------------------------------------')
     print('Beginning test 1 (Read data in constructor)...')
@@ -76,5 +77,5 @@ if __name__ == '__main__':
     print('---------------------------------------------')
     print('Finished test 3!')
     print('---------------------------------------------------------------------------------------')
-    if sys.argv[1] == 'True':
+    if arg_state == 'True':
         sys.stdout.close()

@@ -16,7 +16,8 @@ def read_data_error(iris_filename):
 
 
 if __name__ == '__main__':
-    if sys.argv[1] == 'True':
+    arg_state = sys.argv[1] if len(sys.argv) > 1 else 'False'
+    if arg_state == 'True':
         sys.stdout = open('consoleOutputs/test02.txt', 'w+', encoding="utf-8")
     print('---------------------------------------------------------------------------------------')
     print('Beginning test 1 (CSV error handling)...')
@@ -30,5 +31,5 @@ if __name__ == '__main__':
     print('------------------')
     print('Finished test 1!')
     print('---------------------------------------------------------------------------------------')
-    if sys.argv[1] == 'True':
+    if arg_state == 'True':
         sys.stdout.close()

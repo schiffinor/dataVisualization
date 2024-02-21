@@ -1,38 +1,38 @@
-'''analysis.py
+"""analysis.py
 Run statistical analyses and plot Numpy ndarray data
 YOUR NAME HERE
 CS 251/2: Data Analysis and Visualization
 Spring 2024
-'''
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 class Analysis:
     def __init__(self, data):
-        '''
+        """
 
         Parameters:
         -----------
         data: Data object. Contains all data samples and variables in a dataset.
-        '''
+        """
         self.data = data
 
         # Make plot font sizes legible
         plt.rcParams.update({'font.size': 18})
 
     def set_data(self, data):
-        '''Method that re-assigns the instance variable `data` with the parameter.
+        """Method that re-assigns the instance variable `data` with the parameter.
         Convenience method to change the data used in an analysis without having to create a new Analysis object.
 
         Parameters:
         -----------
         data: Data object. Contains all data samples and variables in a dataset.
-        '''
+        """
         self.data = data
 
     def min(self, headers, rows=[]):
-        '''Computes the minimum of each variable in `headers` in the data object.
+        """Computes the minimum of each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
         (i.e. the minimum value in each of the selected columns)
 
@@ -49,12 +49,12 @@ class Analysis:
             Minimum values for each of the selected header variables
 
         NOTE: There should be no loops in this method!
-        '''
+        """
         data_selection = self.data.select_data(headers, rows)
         return np.min(data_selection, axis=0)
 
     def max(self, headers, rows=[]):
-        '''Computes the maximum of each variable in `headers` in the data object.
+        """Computes the maximum of each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
         Parameters:
@@ -70,12 +70,12 @@ class Analysis:
             Maximum values for each of the selected header variables
 
         NOTE: There should be no loops in this method!
-        '''
+        """
         data_selection = self.data.select_data(headers, rows)
         return np.max(data_selection, axis=0)
 
     def range(self, headers, rows=[]):
-        '''Computes the range [min, max] for each variable in `headers` in the data object.
+        """Computes the range [min, max] for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
         Parameters:
@@ -93,12 +93,12 @@ class Analysis:
             Maximum values for each of the selected header variables
 
         NOTE: There should be no loops in this method!
-        '''
+        """
         data_selection = self.data.select_data(headers, rows)
         return [np.min(data_selection, axis=0), np.max(data_selection, axis=0)]
 
     def mean(self, headers, rows=[]):
-        '''Computes the mean for each variable in `headers` in the data object.
+        """Computes the mean for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`).
 
         Parameters:
@@ -115,16 +115,13 @@ class Analysis:
 
         NOTE: You CANNOT use np.mean here!
         NOTE: There should be no loops in this method!
-        '''
+        """
         data_selection = self.data.select_data(headers, rows)
         height = data_selection.shape[0]
-        print(height)
-        identity_vector = np.vectorize()
-        sums = data_selection
-        return np.mean(data_selection, axis=0)
+        return (1/height) * np.sum(data_selection, axis=0)
 
     def var(self, headers, rows=[]):
-        '''Computes the variance for each variable in `headers` in the data object.
+        """Computes the variance for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
         Parameters:
@@ -142,11 +139,15 @@ class Analysis:
         NOTE:
         - You CANNOT use np.var or np.mean here!
         - There should be no loops in this method!
-        '''
-        pass
+        """
+        data_selection = self.data.select_data(headers, rows)
+        height = data_selection.shape[0]
+        means = self.mean(headers, rows)
+        return (1/(height-1)) * np.sum((data_selection - means)**2, axis=0)
+
 
     def std(self, headers, rows=[]):
-        '''Computes the standard deviation for each variable in `headers` in the data object.
+        """Computes the standard deviation for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
         Parameters:
@@ -164,18 +165,18 @@ class Analysis:
         NOTE:
         - You CANNOT use np.var, np.std, or np.mean here!
         - There should be no loops in this method!
-        '''
-        pass
+        """
+        return np.sqrt(self.var(headers, rows))
 
     def show(self):
-        '''Simple wrapper function for matplotlib's show function.
+        """Simple wrapper function for matplotlib's show function.
 
         (Does not require modification)
-        '''
+        """
         plt.show()
 
     def scatter(self, ind_var, dep_var, title):
-        '''Creates a simple scatter plot with "x" variable in the dataset `ind_var` and "y" variable in the dataset
+        """Creates a simple scatter plot with "x" variable in the dataset `ind_var` and "y" variable in the dataset
         `dep_var`. Both `ind_var` and `dep_var` should be strings in `self.headers`.
 
         Parameters:
@@ -195,11 +196,11 @@ class Analysis:
             The y values that appear in the scatter plot
 
         NOTE: Do not call plt.show() here.
-        '''
+        """
         pass
 
     def pair_plot(self, data_vars, fig_sz=(12, 12), title=''):
-        '''Create a pair plot: grid of scatter plots showing all combinations of variables in `data_vars` in the
+        """Create a pair plot: grid of scatter plots showing all combinations of variables in `data_vars` in the
         x and y axes.
 
         Parameters:
@@ -230,6 +231,6 @@ class Analysis:
         to your plt.subplots call.
 
         NOTE: For loops are allowed here!
-        '''
+        """
 
         pass
