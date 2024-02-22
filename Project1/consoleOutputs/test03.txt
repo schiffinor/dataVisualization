@@ -187,11 +187,6 @@ Order: 2
 │     5.9      │     3.0     │     5.1      │     1.8     │ virginica (2)  │
 └──────────────┴─────────────┴──────────────┴─────────────┴────────────────┘
 
-Data type: numeric
-Data type: numeric
-Data type: numeric
-Data type: numeric
-Data type: categorical
 Row count: 5
 Order: 0
 ┌──────────────┬─────────────┬──────────────┬─────────────┬────────────────┐
@@ -403,11 +398,6 @@ Order: 2
 │     5.9      │     3.0     │     5.1      │     1.8     │ virginica (2)  │
 └──────────────┴─────────────┴──────────────┴─────────────┴────────────────┘
 
-Data type: numeric
-Data type: numeric
-Data type: numeric
-Data type: numeric
-Data type: categorical
 Row count: 5
 Order: 0
 ┌──────────────┬─────────────┬──────────────┬─────────────┬────────────────┐
@@ -527,13 +517,6 @@ Order: 0
 │ 23.0 │ Black (2)  │    7.5    │ 162.0  │   Stilt Walking (2)    │   Frog (2)    │ Pineapple (3) │
 └──────┴────────────┴───────────┴────────┴────────────────────────┴───────────────┴───────────────┘
 
-Data type: numeric
-Data type: categorical
-Data type: numeric
-Data type: numeric
-Data type: categorical
-Data type: categorical
-Data type: categorical
 Row count: 9
 Order: 0
 ┌──────┬────────────┬───────────┬────────┬────────────────────────┬───────────────┬───────────────┐

@@ -1,6 +1,7 @@
 """
 data.py
 Reads CSV files, stores data, access/filter data by variable name
+Added some extra features such as type handling and per type data validation for each type.
 Roman Schiffino
 CS 251: Data Analysis and Visualization
 Spring 2024
@@ -81,6 +82,7 @@ class Data:
         # Also to meet the requirements of test files this was added.
         # My base code is quite robust and handles a lot of different stuff by default.
         # This is a feature to limit that handling. Causes error if all data types are missing.
+        # Otherwise, will process incorrectly formatted csvs.
         self.compatMode = compatMode
 
         if filepath is not None:
@@ -106,6 +108,7 @@ class Data:
 
 
         """
+        # Validation for filepath.
         if filepath is not None and len(filepath) != 0:
             if self.filepath != filepath:
                 self.filepath = filepath
@@ -118,6 +121,7 @@ class Data:
             except OSError as e:
                 print("Could not open file: {}".format(self.filepath))
                 raise RuntimeError(e.strerror)
+            # Process to out-load stripped lines to list such that we can close file.
             raw_file_lines = self.file.readlines()
             file_lines = []
             for raw_line in raw_file_lines:
@@ -125,130 +129,230 @@ class Data:
                 file_lines.append(line)
             self.file.close()
 
+            # Split at commas.
             raw_headers = file_lines[0].split(',')
             headers = []
             for raw_var_name in raw_headers:
                 var_name = raw_var_name.strip()
                 headers.append(var_name)
             self.whole_headers = headers
+            # Test line.
             # print("Headers: {}".format(self.headers))
 
+            # Assuming that the python dictionary is based on a hashmap,
+            # having two reflexive dictionaries is more time efficient than using the __index__ operator on a list.
+            # Also, the whole_var constructions are suc that we can store the entirety of the data for general type,
+            # then refine based on selected accepted data-types.
             self.whole_header2col = dict(zip(self.whole_headers, range(len(self.whole_headers))))
             self.whole_col2header = dict(zip(range(len(self.whole_headers)), self.whole_headers))
             raw_data_types = file_lines[1].split(',')
             data_types = []
             for index, raw_data_type in enumerate(raw_data_types):
                 data_type = raw_data_type.strip()
+                # Test line.
                 # print("Data type: {}".format(data_type))
+
+                # Verify whether data type is accepted.
                 if data_type not in self.dTRef.member_names_:
                     print("Invalid data type: {}\nIgnoring Column.\n".format(data_type))
                     data_types.append(self.dTRef["missing"])
                 else:
                     data_types.append(self.dTRef[data_type])
+            # List of data types corresponding to index of corresponding header in whole_headers2col.
             self.var_data_type = data_types
+
+            # Ensures behavior that test code 2 crashes on invalid data types.
+            # Basically, if all data types are missing,
+            # then raise an error if and only if var_data_type is not empty and not in compat mode.
             if all(d_type.name == "missing" for d_type in self.var_data_type) and len(
                     self.var_data_type) > 0 and not self.compatMode:
                 raise ValueError("All data types invalid.\n"
                                  "Input file likely missing data types.\n"
                                  "Second line must list data types."
                                  "Second line processed: {}".format(file_lines[1]))
+            # Test lines.
             # print("Data types: {}".format(self.var_data_type))
             # print("Data types: {}".format(list(map(lambda var: var.name, self.var_data_type))))
+
+            # Here again because hashmaps are better than lists, a bijective mapping is what were implementing here.
+            # The four variables below are all dictionaries.
+            # The base of all four structures below is a map from the set of headers to some other collection.
+            # In self.cats2levels and self.levels2cats each element of the value set is a list.
+            # self.cats2levels maps to a list of the levels.
+            # self.levels2cats maps to a list of the categories corresponding to the order imposed by self.cats2levels.
+            # In both self.cats2level_dicts and self.levels2cats_dicts is instead another dictionary.
+            # self.cats2level_dicts maps to a map from the set of categories to the set of levels.
+            # self.levels2cats_dicts maps to a map from the set of levels to the set of categories.
+            # This structure is considerably less space efficient than a list. Yet, it is considerably more time efficient.
+            # As hashmap lookup is O(1) and list lookup is O(n).
             for index, datum in enumerate(self.var_data_type):
                 if datum.name == "categorical":
                     self.cats2levels[self.whole_headers[index]] = []
                     self.cats2level_dicts[self.whole_headers[index]] = {}
                     self.levels2cats[self.whole_headers[index]] = []
                     self.levels2cats_dicts[self.whole_headers[index]] = {}
+
+            # This behemoth is the data interpretation, validation, and categorization structure.
+            # It's large and a bit complex but it handles a lot.
             self.whole_data_list = []
             for row_index, line in enumerate(file_lines[2:]):
+                # Split at commas.
                 raw_data = line.split(',')
+                # Initiate row of data as empty list.
                 data = []
                 for index, raw_datum in enumerate(raw_data):
+                    # Allows for string data types to include leading and trailing whitespace, which is otherwise removed.
+                    # This allows for strings to be just sequences of white space which could be handy.
                     datum = raw_datum.strip() if self.var_data_type[index].name != "string" else raw_datum
+
+                    # Handles missing data points.
                     if datum == "":
+                        # Empty numeric handling.
                         if self.var_data_type[index].name == "numeric":
                             data.append(np.nan)
+                        # Empty categorical handling.
                         elif self.var_data_type[index].name == "categorical":
+                            # Category defined as missing.
                             category = "Missing"
+                            # Header determination via index of corresponding header in whole_headers2col.
                             temp_header = self.whole_col2header[index]
+                            # Corresponding self.cats2levels and self.cats2level_dicts maps.
                             temp_list = self.cats2levels[temp_header]
                             temp_dict = self.cats2level_dicts[temp_header]
+                            # Handling for when "Missing" is not in the category list.
                             if category not in temp_list:
+                                # Add missing to category list.
                                 temp_list.append(category)
+                                # Calculate index of most recently added entry.
                                 index = len(temp_list) - 1
+                                # Update category dictionary based on new entry.
                                 self.cats2level_dicts[temp_header][temp_list[index]] = index
                                 self.levels2cats_dicts[temp_header][index] = category
+                                # Updates temp dict and self.cats2level.
+                                # (I'm not sure if python stores a copy or a memory reference when defining var by another var.)
                                 temp_dict = self.cats2level_dicts[temp_header]
+                                self.cats2levels[temp_header] = temp_list
+                            # Adds datum to data row list.
                             data.append(temp_dict[category])
+                        # Empty string handling.
                         elif self.var_data_type[index].name == "string":
                             data.append(datum)
+                        # Empty date handling.
                         elif self.var_data_type[index].name == "date":
                             data.append("N/A")
+                        # Empty missing handling.
                         elif self.var_data_type[index].name == "missing":
                             data.append(datum)
+                        # Default handling.
                         else:
                             raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
+
+                    # Standard data handling.
                     else:
+                        # Numeric handling.
                         if self.var_data_type[index].name == "numeric":
+                            # Try and cast to float.
                             try:
                                 number = float(datum)
+                            # Catch overflow errors.
                             except OverflowError:
                                 number = float("inf")
                                 print("Overflow Error: {} is too large.".format(datum))
+                            # Catch value errors.
                             except ValueError:
                                 number = np.nan
-                                print("Data Error: {} is not a number.".format(datum))
+                                print("Value Error: {} is not a number.".format(datum))
                             data.append(number)
+                        # Categorical handling.
                         elif self.var_data_type[index].name == "categorical":
+                            # Header determination via index of corresponding header in whole_headers2col.
                             temp_header = self.whole_col2header[index]
+                            # Corresponding self.cats2levels and self.cats2level_dicts maps.
                             temp_list = self.cats2levels[temp_header]
                             temp_dict = self.cats2level_dicts[temp_header]
+                            # Handling for when datum category is not in the category list.
                             if datum not in temp_list:
+                                # Add missing to category list.
                                 temp_list.append(datum)
+                                # Calculate index of most recently added entry.
                                 index = len(temp_list) - 1
+                                # Update category dictionary based on new entry.
                                 self.cats2level_dicts[temp_header][temp_list[index]] = index
                                 self.levels2cats_dicts[temp_header][index] = datum
+                                # Updates temp dict and self.cats2level.
+                                # (I'm not sure if python stores a copy or a memory reference when defining var by another var.)
                                 temp_dict = self.cats2level_dicts[temp_header]
+                                self.cats2levels[temp_header] = temp_list
+                            # Adds datum to data row list.
                             data.append(temp_dict[datum])
+                        # String type handling.
                         elif self.var_data_type[index].name == "string":
                             data.append(datum)
+                        # Date type handling.
                         elif self.var_data_type[index].name == "date":
+                            # Try and cast to datetime.
                             try:
                                 date = d_parse.parse(datum)
+                            # Catch non-date errors.
                             except d_parse.ParserError:
                                 date = "N/A"
                             data.append(date)
+                        # Missing type handling.
                         elif self.var_data_type[index].name == "missing":
                             data.append(datum)
+                        # Default handling.
                         else:
                             raise ValueError("IMPOSSIBLE! Invalid data type: {}".format(self.var_data_type[index]))
+                # Append row of data to whole data list.
                 self.whole_data_list.append(data)
 
+        # Create matrix from the whole data list. Matrix is built on an implementation I wrote a couple of years back.
+        # Originally was coded such that matrix operations treated matrices as immutable.
+        # However, I did a complete conversion of all the methods within the matrix class that I used in this to make them run faster.
+        # This coupled with some other performance improvements resulted in a 138.25 times speedup for print_austin function.
+        # Regardless this structure parses the whole_data_array into a matrix consisting of only non-missing data types.
+        # That is unless the data is in compat mode.
         self.whole_data_array = m.Matrix(0, 0, self.whole_data_list)
+        # Create empty matrix for data.
         self.data_array = m.Matrix(self.whole_data_array.rows, 0)
         print("Data extracted from file. \nNow processing data...\n")
-        for index, var_type in enumerate(self.var_data_type):
-            if var_type.name != "missing":
-                self.data_array.r_append(
-                    m.Matrix(0, 0, list(map(lambda x: [x], self.whole_data_array.get_col(index)))))
+        if self.compatMode:
+            self.data_array = self.whole_data_array
+        else:
+            for index, var_type in enumerate(self.var_data_type):
+                # Append non-missing data to data array.
+                if var_type.name != "missing":
+                    # Pretty simple mapping expression with lambda that composes a column vector via a map of the xth index of each column.
+                    self.data_array.r_append(
+                        m.Matrix(0, 0, list(map(lambda x: [x], self.whole_data_array.get_col(index)))))
 
+        # Test code.
         # print("Whole data: \n{}".format(self.whole_data_array))
         # print("Data: \n{}".format(self.data_array))
+
+        # Handy function I added for ease in my matrix class.
+        # Completely unnecessary as it makes my module less portable, but whatever, convenience.
         self.data = self.data_array.to_numpy()
+        # Defines all our referencable values in terms of indexes of the new matrix.
         self.headers = []
         self.header2col = {}
         self.col2header = {}
+        # Base index that will be incremented for each header with a non-missing datatype.
         new_index = 0
         for index, header in enumerate(self.whole_headers):
             if self.var_data_type[index].name != "missing":
+                # Test code.
                 # print(self.var_data_type[index])
                 # print(header)
+                # Appends header to headers list.
                 self.headers.append(header)
+                # Creates self.header2col and self.col2header dictionaries.
+                # Once again, reflected dictionaries for speed.
                 self.header2col[header] = new_index
                 self.col2header[new_index] = header
+                # Increments new_index by 1 for each header
                 new_index += 1
-
+        # Little disclaimer to the user.
         print("Data processing complete!\n")
 
     def __str__(self):
@@ -265,61 +369,130 @@ class Data:
 
         NOTE: It is fine to print out int-coded categorical variables (no extra work compared to printing out numeric data).
         Printing out the categorical variables with string levels would be a small extension.
+
+        My Notes:
+        OK, so I kind of went over the top with this one. This may have been a little more trouble than it was worth.
+        However, it was pretty cool.
+
+        What we do here is generate a very ornately formatted string representation of the data table.
+        We have use UTF-8 encoding here in order to make use of the table construction characters.
+
+        Regardless, this was previously a major lag source. The print_austin function was previously quite a bit slower.
+        From my experience in Java, and the test code I had baked into this code,
+        I had some idea that the lag was likely a result of string concatenation. Thus, I did some research.
+        Apparently, string in python are immutable, thus when we concatenate a string using the + operator (__add__()),
+        the time complexity is O(n^2).
+        As such I checked a comparison of various concatenation methods and came to the result that,
+        while the overhead on the str.join() method was greater than the other methods,
+        resulting in slower performance for smaller sets of strings,
+        for sets of strings with cardinality greater than 10,000 or so,
+        the increased speed of the join method resulted in drastically more rapid processing.
+        Thus, I rewrote this method to use the str.join() method.
+        Every instance of out_string += "~" was replaced with an instance of out_list.append("~").
+        Then instead of returning out_string we return "".join(out_list).
+        The performance was drastically faster. In fact, it was about 46.87 times faster.
         """
+        # Initialize list storing maximum of set of length of string representation for all entries in each column.
         sizes = []
+        # Initialize list storing data type for each column.
         data_types = []
+        # Initialize list storing all strings to be concatenated.
         out_list = ["┌"]
+
+        # Determine maximum of length of string representations for all entries in each column.
+        # This is the most important step in all the formatting as the spacing and all the boundary alignments depend on this.
         for index, word in enumerate(self.headers):
+            # By default, temp_size is the length of the header plus two.
             temp_size = len(word) + 2
+            # Determine data type for each header by mapping reference index to header,
+            # then mapping that header to the actual column in the whole_data_array,
+            # then retrieving data type corresponding to that column index.
             data_type = self.var_data_type[self.whole_header2col[self.col2header[index]]]
+            # Append to local datatype reference list.
             data_types.append(data_type)
+            # If data type is categorical, we will be representing it in the following format:
+            # category.name (category.level)
+            # Thus the length of this string representation is the length of the category name, plus 5,
+            # 3 spaces and 2 parentheses, plus the length of the levels string representation.
             if data_type.name == "categorical":
                 for category in self.cats2levels[word]:
                     new_size = len(category) + 5 + len(str(self.cats2level_dicts[word][category]))
+                    # If the length of this string representation is greater than the current temp size we update the temp size.
                     if new_size > temp_size:
                         temp_size = new_size
+            # For all other data types, the length of this string representation is just that plus two (for spaces).
+            # As such we update the temp size if and only if len(str(entry)) + 2  is greater than the current temp size.
             else:
                 for entry in self.data[:, self.header2col[word]]:
                     if len(str(entry)) + 2 > temp_size:
                         temp_size = len(str(entry)) + 2
+            # Append temp_size (maximum length of string representation) to local list.
             sizes.append(temp_size)
+            # Border framing.
             out_list.append(temp_size * "─")
             out_list.append("┬")
+        # Remove excess "┬".
         out_list.pop(-1)
         out_list.append("┐\n│")
+
+        # Here we create our string representation of the data in the data table.
+        # This loop handles header row of the data table and manages spacing.
         for index, word in enumerate(self.headers):
+            # Get size.
             size = sizes[index]
+            # Create a truncation and alignment formatting string.
+            # These are interpreted as strings, so they must be composed first.
+            # This particular string instructs the formatter to make sure the string is center aligned,
+            # and exactly size characters long.
             sizer = '{:^' + str(size) + '.' + str(size) + '}'
             out_list.append(sizer.format(str(word)) + "│")
         out_list.append("\n├")
+        # Separatory boundary between the variable names and the data table.
         for s in sizes:
             out_list.append(s * "─")
             out_list.append("┼")
+        # Remove excess "┼".
         out_list.pop(-1)
         out_list.append("┤\n")
         rows = self.data_array.row_set()
         row_count = len(rows)
+        # Calculates order of the row count for the dataset, ie floor of the base 10 log of the row count.
         order = math.floor(math.log10(row_count))
+        # Test code, but useful information, so left in.
         print("Row count: {}".format(row_count))
         print("Order: {}".format(order))
+        # This loop handles each row of the data table and manages spacing.
         for ind, row in enumerate(rows):
+            # Progress notifications, helpful for the user when printing out massive datasets to make sure program isn't frozen.
+            # Notifications only appear if row count is greater than 10,000.
+            # Notification rate is determined by the order of the row count.
+            # Larger sets will have notifications spaced at larger gaps in row count.
             if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
                 ratio = ind / row_count
+                # Progress reported as a percentage with 2 decimal places.
                 print("String output {:.2%}".format(ratio))
             out_list.append("│")
+            # This loop handles each entry of the row and manages string representation of the entry.
             for index, entry in enumerate(row):
+                # Determine data type for each entry using local reference list.
                 data_type = data_types[index]
                 fill = entry
+                # Get size.
                 size = sizes[index]
+                # Create a truncation and alignment formatting string.
                 sizer = '{:^' + str(size) + '.' + str(size) + '}'
+                # String representation of categorical data.
                 if data_type.name == "categorical":
+                    # category.name (category.level)
                     fill = self.levels2cats_dicts[self.col2header[index]][int(entry)] + " (" + str(entry) + ")"
                 out_list.append(sizer.format(str(fill)) + "│")
             out_list.append("\n")
+        # Create lower border for table.
         out_list.append("└")
         for s in sizes:
             out_list.append(s * "─")
             out_list.append("┴")
+        # Remove excess "┴".
         out_list.pop(-1)
         out_list.append("┘\n")
         return "".join(out_list)
@@ -486,89 +659,163 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
 
     NOTE: It is fine to print out int-coded categorical variables (no extra work compared to printing out numeric data).
     Printing out the categorical variables with string levels would be a small extension.
+
+
+        My Notes:
+        OK, again, I kind of went over the top with this one.
+        This is a generalization of out __str__() method in our data structure to arbitrary ndarray given some indexing maps.
+
+        What we do here is generate a very ornately formatted string representation of the data table.
+        We have use UTF-8 encoding here in order to make use of the table construction characters.
     """
+    # Turns a np.ndarray object into a list.
     data_output = data.tolist()
 
+    # Creates a matrix object from the data_output list.
     data_array = m.Matrix(0, 0, data_output)
+
+    # This next section allows us to convert some of the passed in variables into variables that we need but were not provided.
+    # This allows us to require less parameter inputs, allowing for my and the users' sanity to be maintained.
+    # Create a new temp dict which will be used to store the mapping between headers and columns.
     new_dict = {}
     for index, word in enumerate(headers):
         new_dict[word] = index
+    # Assign the new_dict to header2col.
     header2col = new_dict
+    # Create a new temp list which will store variable data types corresponding to each header.
     new_list = []
     for index, word in enumerate(headers):
         new_list.append(var_data_type[whole_header2col[word]])
+    # Assign the new_list to var_data_type.
     var_data_type = new_list
+    # Create a new temp dict which will store the mapping between columns and headers.
     col2header = {}
     for index, word in enumerate(headers):
         col2header[index] = word
 
+    # A pretty complex map and lambda function that allow us to map each key in the cats2level_dicts dictionary
+    # to a list of two elements, that key in the 0th index,
+    # and a dictionary mapping each value in cats2level_dicts to its corresponding key in the 1st index.
+    # What this allows us to do is essentially map each key in cats2level_dicts to a mirror of cats2level_dicts.
     flip_map = map(lambda x: [x, dict(zip(cats2level_dicts[str(x)].values(), cats2level_dicts[str(x)].keys()))],
                    list(cats2level_dicts.keys()))
-
+    # Initiate two empty lists for the keys and values of the dictionary.
     lc_keys = []
     lc_vals = []
 
+    # We use our previously defined flip map and separate the list of lists into two lists.
+    # One of 0th entries and one of 1st entries.
     for entry in flip_map:
         lc_keys.append(entry[0])
         lc_vals.append(entry[1])
 
+    # We now use the zip and dict function to create a new dictionary, defined such that:
+    # Each key, k, in cats2level_dicts is mapped to a dictionary.
+    # Each of these dictionaries maps the values of the dictionary corresponding to k in cats2level_dicts,
+    # to the keys of the dictionary corresponding to k in cats2level_dicts.
+    # This definition is equivalent to that of levels2cats_dicts in our data structure, thus we set levels2cats_dicts to this new dictionary.
     levels2cats_dicts = dict(zip(lc_keys, lc_vals))
 
+    # Initialize list storing maximum of set of length of string representation for all entries in each column.
     sizes = []
+    # Initialize list storing data type for each column.
     data_types = []
+    # Initialize list storing all strings to be concatenated.
     out_list = ["┌"]
+    # Determine maximum of length of string representations for all entries in each column.
+    # This is the most important step in all the formatting as the spacing and all the boundary alignments depend on this.
     for index, word in enumerate(headers):
+        # By default, temp_size is the length of the header plus two.
         temp_size = len(word) + 2
+        # Determine data type for each header by mapping reference index to header,
+        # then mapping that header to the actual column in the whole_data_array,
+        # then retrieving data type corresponding to that column index.
         data_type = var_data_type[index]
+        # Append to local datatype reference list.
         data_types.append(data_type)
+        # If data type is categorical, we will be representing it in the following format:
+        # category.name (category.level)
+        # Thus the length of this string representation is the length of the category name, plus 5,
+        # 3 spaces and 2 parentheses, plus the length of the levels string representation.
         if data_type.name == "categorical":
             for category in cats2level_dicts[word].keys():
                 new_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
+                # If the length of this string representation is greater than the current temp size we update the temp size.
                 if new_size > temp_size:
                     temp_size = new_size
+        # For all other data types, the length of this string representation is just that plus two (for spaces).
+        # As such we update the temp size if and only if len(str(entry)) + 2  is greater than the current temp size.
         else:
             for entry in data[:, header2col[word]]:
                 if len(str(entry)) + 2 > temp_size:
                     temp_size = len(str(entry)) + 2
+        # Append temp_size (maximum length of string representation) to local list.
         sizes.append(temp_size)
+        # Border framing.
         out_list.append(temp_size * "─")
         out_list.append("┬")
+    # Remove excess "┬".
     out_list.pop(-1)
     out_list.append("┐\n│")
+    # Here we create our string representation of the data in the data table.
+    # This loop handles header row of the data table and manages spacing.
     for index, word in enumerate(headers):
+        # Get size.
         size = sizes[index]
+        # Create a truncation and alignment formatting string.
+        # These are interpreted as strings, so they must be composed first.
+        # This particular string instructs the formatter to make sure the string is center aligned,
+        # and exactly size characters long.
         sizer = '{:^' + str(size) + '.' + str(size) + '}'
         out_list.append(sizer.format(str(word)) + "│")
     out_list.append("\n├")
+    # Separatory boundary between the variable names and the data table.
     for s in sizes:
         out_list.append(s * "─")
         out_list.append("┼")
+    # Remove excess "┼".
     out_list.pop(-1)
     out_list.append("┤\n")
     rows = data_array.row_set()
     row_count = len(rows)
+    # Calculates order of the row count for the dataset, ie floor of the base 10 log of the row count.
     order = math.floor(math.log10(row_count))
+    # Test code, but useful information, so left in.
     print("Row count: {}".format(row_count))
     print("Order: {}".format(order))
+    # This loop handles each row of the data table and manages spacing.
     for ind, row in enumerate(rows):
+        # Progress notifications, helpful for the user when printing out massive datasets to make sure program isn't frozen.
+        # Notifications only appear if row count is greater than 10,000.
+        # Notification rate is determined by the order of the row count.
+        # Larger sets will have notifications spaced at larger gaps in row count.
         row = list(map(lambda x: row[header2col[x]], headers))
         if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
             ratio = ind / row_count
+            # Progress reported as a percentage with 2 decimal places.
             print("String output {:.2%}".format(ratio))
         out_list.append("│")
+        # This loop handles each entry of the row and manages string representation of the entry.
         for index, entry in enumerate(row):
+            # Determine data type for each entry using local reference list.
             data_type = data_types[index]
             fill = entry
+            # Get size.
             size = sizes[index]
+            # Create a truncation and alignment formatting string.
             sizer = '{:^' + str(size) + '.' + str(size) + '}'
+            # String representation of categorical data.
             if data_type.name == "categorical":
+                # category.name (category.level)
                 fill = levels2cats_dicts[col2header[index]][int(entry)] + " (" + str(int(entry)) + ")"
             out_list.append(sizer.format(str(fill)) + "│")
         out_list.append("\n")
+    # Create lower border for table.
     out_list.append("└")
     for s in sizes:
         out_list.append(s * "─")
         out_list.append("┴")
+    # Remove excess "┴".
     out_list.pop(-1)
     out_list.append("┘\n")
     return "".join(out_list)
@@ -588,71 +835,13 @@ def data2str_source(data: np.ndarray, data_source: Data):
 
     NOTE: It is fine to print out int-coded categorical variables (no extra work compared to printing out numeric data).
     Printing out the categorical variables with string levels would be a small extension.
-    """
-    data_output = data.tolist()
 
-    data_array = m.Matrix(0, 0, data_output)
+    Same as above, just self extracting data from an accompanying Data object.
+    """
+    # Extract data from Data object.
     headers = data_source.headers
     var_data_type = data_source.var_data_type
+    whole_header2col = data_source.whole_header2col
     header2col = data_source.header2col
-    col2header = data_source.col2header
     cats2level_dicts = data_source.cats2level_dicts
-    levels2cats_dicts = data_source.levels2cats_dicts
-
-    sizes = []
-    data_types = []
-    out_list = ["┌"]
-    for index, word in enumerate(headers):
-        temp_size = len(word) + 2
-        data_type = var_data_type[index]
-        data_types.append(data_type)
-        if data_type.name == "categorical":
-            for category in cats2level_dicts[word].keys():
-                new_size = len(category) + 5 + len(str(cats2level_dicts[word][category]))
-                if new_size > temp_size:
-                    temp_size = new_size
-        else:
-            for entry in data[:, header2col[word]]:
-                if len(str(entry)) + 2 > temp_size:
-                    temp_size = len(str(entry)) + 2
-        sizes.append(temp_size)
-        out_list.append(temp_size * "─")
-        out_list.append("┬")
-    out_list.pop(-1)
-    out_list.append("┐\n│")
-    for index, word in enumerate(headers):
-        size = sizes[index]
-        sizer = '{:^' + str(size) + '.' + str(size) + '}'
-        out_list.append(sizer.format(str(word)) + "│")
-    out_list.append("\n├")
-    for s in sizes:
-        out_list.append(s * "─")
-        out_list.append("┼")
-    out_list.pop(-1)
-    out_list.append("┤\n")
-    rows = data_array.row_set()
-    row_count = len(rows)
-    order = math.floor(math.log10(row_count))
-    print("Row count: {}".format(row_count))
-    print("Order: {}".format(order))
-    for ind, row in enumerate(rows):
-        if ind % (1000 * (math.pow(10, order - 5))) == 0 and row_count >= 10000:
-            ratio = ind / row_count
-            print("String output {:.2%}".format(ratio))
-        out_list.append("│")
-        for index, entry in enumerate(row):
-            data_type = data_types[index]
-            fill = entry
-            size = sizes[index]
-            sizer = '{:^' + str(size) + '.' + str(size) + '}'
-            if data_type.name == "categorical":
-                fill = levels2cats_dicts[col2header[index]][int(entry)] + " (" + str(int(entry)) + ")"
-            out_list.append(sizer.format(str(fill)) + "│")
-        out_list.append("\n")
-    out_list.append("└")
-    for s in sizes:
-        out_list.append(s * "─")
-        out_list.append("┴")
-    out_list.pop(-1)
-    out_list.append("┘\n")
-    return "".join(out_list)
+    return data2str(data, headers, cats2level_dicts, var_data_type, whole_header2col, header2col)
