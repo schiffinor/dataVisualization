@@ -197,7 +197,13 @@ class Analysis:
 
         NOTE: Do not call plt.show() here.
         """
-        pass
+        ind_data = self.data.select_data([ind_var])
+        dep_data = self.data.select_data([dep_var])
+        plt.scatter(ind_data, dep_data)
+        plt.title(title)
+        plt.xlabel(ind_var)
+        plt.ylabel(dep_var)
+        return ind_data, dep_data
 
     def pair_plot(self, data_vars, fig_sz=(12, 12), title=''):
         """Create a pair plot: grid of scatter plots showing all combinations of variables in `data_vars` in the
@@ -232,5 +238,17 @@ class Analysis:
 
         NOTE: For loops are allowed here!
         """
-
-        pass
+        size = len(data_vars)
+        figure, ax = plt.subplots(size, size, figsize=fig_sz, sharex='col', sharey='row')
+        for row, dep in enumerate(data_vars):
+            for col, ind in enumerate(data_vars):
+                ind_data = self.data.select_data([ind])
+                dep_data = self.data.select_data([dep])
+                place = ax[row, col]
+                place.scatter(ind_data, dep_data)
+                if row == size-1:
+                    place.set_xlabel(ind)
+                if col == 0:
+                    place.set_ylabel(dep)
+        plt.title(title)
+        return figure, ax
