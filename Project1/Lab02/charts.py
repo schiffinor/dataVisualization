@@ -32,7 +32,8 @@ def sidebarplot(values, labels, title, show_counts=True, figsize=(6, 7)):
     '''
     plt.figure(figsize=figsize)
     values = np.round(values, 2)
-    ax = plt.barh(labels, values, align='center', color='#ffffff', edgecolor='#000000')
+    ax = plt.barh(np.arange(len(values)), values, align='center', color='#ffffff', edgecolor='#000000')
+    plt.yticks(np.arange(len(values)), labels)
     plt.title(title)
     splitter = title.split(' by ')
     plt.xlabel(splitter[0])
