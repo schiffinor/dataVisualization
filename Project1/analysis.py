@@ -5,7 +5,16 @@ CS 251/2: Data Analysis and Visualization
 Spring 2024
 """
 import numpy as np
+from data import *
 import matplotlib.pyplot as plt
+
+
+def show():
+    """Simple wrapper function for matplotlib's show function.
+
+    (Does not require modification)
+    """
+    plt.show()
 
 
 class Analysis:
@@ -21,6 +30,48 @@ class Analysis:
         # Make plot font sizes legible
         plt.rcParams.update({'font.size': 18})
 
+    @staticmethod
+    def l1_norm(a: np.ndarray, b: np.ndarray):
+        if a.shape != b.shape and a.shape != b.T.shape:
+            raise ValueError("Arrays must have the same shape")
+        if a.ndim != 1:
+            raise ValueError("Arrays must be 1D")
+        if np.array_equal(a, b):
+            return 0
+        return np.sum(np.abs(b-a), axis=0)
+
+    @staticmethod
+    def l2_norm(a: np.ndarray, b: np.ndarray):
+        if a.shape != b.shape and a.shape != b.T.shape:
+            raise ValueError("Arrays must have the same shape")
+        if a.ndim != 1:
+            raise ValueError("Arrays must be 1D")
+        if np.array_equal(a, b):
+            return 0
+        return np.sqrt(np.sum((b-a)**2, axis=0))
+
+    @staticmethod
+    def lp_norm(a: np.ndarray, b: np.ndarray, p: int):
+        if a.shape != b.shape and a.shape != b.T.shape:
+            raise ValueError("Arrays must have the same shape")
+        if a.ndim != 1:
+            raise ValueError("Arrays must be 1D")
+        if np.array_equal(a, b):
+            return 0
+        pfloat = float(p)
+        inv_p = float(float(1)/pfloat)
+        return np.float_power(np.sum(np.abs(b-a)**pfloat, axis=0), inv_p)
+
+    @staticmethod
+    def l_inf_norm(a: np.ndarray, b: np.ndarray):
+        if a.shape != b.shape and a.shape != b.T.shape:
+            raise ValueError("Arrays must have the same shape")
+        if a.ndim != 1:
+            raise ValueError("Arrays must be 1D")
+        if np.array_equal(a, b):
+            return 0
+        return np.max(np.abs(b-a), axis=0)
+
     def set_data(self, data):
         """Method that re-assigns the instance variable `data` with the parameter.
         Convenience method to change the data used in an analysis without having to create a new Analysis object.
@@ -31,7 +82,7 @@ class Analysis:
         """
         self.data = data
 
-    def min(self, headers, rows=[]):
+    def min(self, headers, rows=None):
         """Computes the minimum of each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
         (i.e. the minimum value in each of the selected columns)
@@ -53,7 +104,7 @@ class Analysis:
         data_selection = self.data.select_data(headers, rows)
         return np.min(data_selection, axis=0)
 
-    def max(self, headers, rows=[]):
+    def max(self, headers, rows=None):
         """Computes the maximum of each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
@@ -74,7 +125,7 @@ class Analysis:
         data_selection = self.data.select_data(headers, rows)
         return np.max(data_selection, axis=0)
 
-    def range(self, headers, rows=[]):
+    def range(self, headers, rows=None):
         """Computes the range [min, max] for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
@@ -97,7 +148,7 @@ class Analysis:
         data_selection = self.data.select_data(headers, rows)
         return [np.min(data_selection, axis=0), np.max(data_selection, axis=0)]
 
-    def mean(self, headers, rows=[]):
+    def mean(self, headers, rows=None):
         """Computes the mean for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`).
 
@@ -120,7 +171,7 @@ class Analysis:
         height = data_selection.shape[0]
         return (1/height) * np.sum(data_selection, axis=0)
 
-    def var(self, headers, rows=[]):
+    def var(self, headers, rows=None):
         """Computes the variance for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
@@ -146,7 +197,7 @@ class Analysis:
         return (1/(height-1)) * np.sum((data_selection - means)**2, axis=0)
 
 
-    def std(self, headers, rows=[]):
+    def std(self, headers, rows=None):
         """Computes the standard deviation for each variable in `headers` in the data object.
         Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
 
@@ -197,7 +248,13 @@ class Analysis:
 
         NOTE: Do not call plt.show() here.
         """
-        pass
+        ind_data = self.data.select_data([ind_var])
+        dep_data = self.data.select_data([dep_var])
+        plt.scatter(ind_data, dep_data)
+        plt.title(title)
+        plt.xlabel(ind_var)
+        plt.ylabel(dep_var)
+        return ind_data, dep_data
 
     def pair_plot(self, data_vars, fig_sz=(12, 12), title=''):
         """Create a pair plot: grid of scatter plots showing all combinations of variables in `data_vars` in the
@@ -232,5 +289,129 @@ class Analysis:
 
         NOTE: For loops are allowed here!
         """
+        size = len(data_vars)
+        figure, ax = plt.subplots(size, size, figsize=fig_sz, sharex='col', sharey='row')
+        for row, dep in enumerate(data_vars):
+            for col, ind in enumerate(data_vars):
+                ind_data = self.data.select_data([ind])
+                dep_data = self.data.select_data([dep])
+                place = ax[row, col]
+                place.scatter(ind_data, dep_data)
+                if row == size-1:
+                    place.set_xlabel(ind)
+                if col == 0:
+                    place.set_ylabel(dep)
+        plt.title(title)
+        return figure, ax
 
-        pass
+    def l_centrality(self, headers, rows=None, metric=l_inf_norm):
+        """Computes the L-infinity centrality for each variable in `headers` in the data object.
+        Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
+
+        Parameters:
+        -----------
+        headers: Python list of str.
+            One str per header variable name in data
+        rows: Python list of int.
+            Indices of data samples to restrict computation of L-infinity centrality over, or over all indices if rows=[]
+
+        Returns
+        -----------
+        l_inf: ndarray. shape=(len(headers),)
+            L-infinity centrality values computed considering all of the selected header variables
+
+        NOTE: There should be no loops in this method!
+        """
+        norm = self.l_inf_norm
+        if metric == self.l1_norm:
+            norm = self.l1_norm
+        elif metric == self.l2_norm:
+            norm = self.l2_norm
+
+        data_selection = self.data.select_data(headers, rows)
+        point_count = data_selection.shape[0]
+        distance_array = np.ndarray(shape=(point_count, point_count))
+        for i in range(point_count):
+            for j in range(i, point_count):
+                fill = norm(data_selection[i], data_selection[j])
+                distance_array[i, j] = fill
+                if i != j:
+                    distance_array[j, i] = fill
+        return np.max(distance_array, axis=0)
+
+    def l_centrality_alt(self, headers, rows=None, metric=l_inf_norm):
+        """Computes the L-infinity centrality for each variable in `headers` in the data object.
+        Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
+
+        Parameters:
+        -----------
+        headers: Python list of str.
+            One str per header variable name in data
+        rows: Python list of int.
+            Indices of data samples to restrict computation of L-infinity centrality over, or over all indices if rows=[]
+
+        Returns
+        -----------
+        l_inf: ndarray. shape=(len(headers),)
+            L-infinity centrality values computed considering all of the selected header variables
+
+        NOTE: There should be no loops in this method!
+        """
+        norm = self.l_inf_norm
+        if metric == self.l1_norm:
+            norm = self.l1_norm
+        elif metric == self.l2_norm:
+            norm = self.l2_norm
+
+        data_selection = self.data.select_data(headers, rows)
+        point_count = data_selection.shape[0]
+        distance_array = np.ndarray(shape=point_count)
+        # Calculates order of the row count for the dataset, ie floor of the base 10 log of the row count.
+        order = math.floor(math.log10(point_count))
+        for i in range(point_count):
+            if i % (100 * (math.pow(10, order - 5))) == 0 and point_count >= 10000:
+                ratio = i / point_count
+                print("String output {:.2%}".format(ratio))
+            new_max = np.max(np.array([norm(data_selection[i], data_selection[j]) for j in range(point_count)]))
+            distance_array[i] = new_max
+        return distance_array
+
+    def l_centroid(self, headers, rows=None, metric=l_inf_norm):
+        """Computes the L-infinity centrality for each variable in `headers` in the data object.
+        Possibly only in a subset of data samples (`rows`) if `rows` is not empty.
+
+        Parameters:
+        -----------
+        headers: Python list of str.
+            One str per header variable name in data
+        rows: Python list of int.
+            Indices of data samples to restrict computation of L-infinity centrality over, or over all indices if rows=[]
+
+        Returns
+        -----------
+        l_inf: ndarray. shape=(len(headers),)
+            L-infinity centrality values computed considering all of the selected header variables
+
+        NOTE: There should be no loops in this method!
+        """
+        data_selection = self.data.select_data(headers, rows)
+        centralities = self.l_centrality(headers, rows, metric)
+        maximum = np.argmax(centralities)
+        return data_selection[np.argmax(centralities)], maximum
+
+
+
+
+
+
+if __name__ == "__main__" :
+    # Set the data for analysis
+    filename = 'data/vertices.csv'
+    vert_data = Data(filename)
+    analysis = Analysis(vert_data)
+    
+    centrality = analysis.l_centrality(["pos_x", "pos_y", "pos_z"], rows=np.random.randint(0, 1000000, 10000), metric=Analysis.l2_norm)
+    print(centrality)
+
+    centrality_alt = analysis.l_centrality_alt(["pos_x", "pos_y", "pos_z"], rows=np.random.randint(0, 1000000, 10000), metric=Analysis.l2_norm)
+    print(centrality_alt)

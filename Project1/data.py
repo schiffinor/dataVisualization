@@ -23,8 +23,8 @@ class Data:
     Represents data read in from .csv files
     """
 
-    def __init__(self, filepath=None, headers=None, data=None, header2col=None, cats2levels=None, allDataTypes=False,
-                 compatMode=False):
+    def __init__(self, filepath: str = None, headers: List[str] = None, data: np.ndarray = None,
+                 header2col: Dict[str, int] = None, cats2levels: List[str] = None, allDataTypes=False, compatMode=False):
         """
         Data object constructor
 
@@ -66,6 +66,7 @@ class Data:
         self.whole_data_array = None
         self.whole_data_list = None
         self.data = data
+        self.data_copy = data.copy() if data is np.ndarray else data
         self.header2col = header2col
         self.whole_header2col = None
         # I love ternary operators if that wasn't immediately obvious. (Java's is better.)
@@ -74,7 +75,6 @@ class Data:
         # Basically I assume that pythons dict is a hashmap. Hashmap is more efficient than a list.
         self.cats2levels = {} if cats2levels is None else cats2levels
         self.cats2level_dicts = {} if cats2levels is None else None
-        self.levels2cats = {} if cats2levels is None else cats2levels
         self.levels2cats_dicts = {} if cats2levels is None else None
         self.allDataTypes = allDataTypes
         # To meet the requirements of test files this was added. Basically restricts possible data types.
@@ -177,9 +177,8 @@ class Data:
             # Here again because hashmaps are better than lists, a bijective mapping is what were implementing here.
             # The four variables below are all dictionaries.
             # The base of all four structures below is a map from the set of headers to some other collection.
-            # In self.cats2levels and self.levels2cats each element of the value set is a list.
+            # In self.cats2levels each element of the value set is a list.
             # self.cats2levels maps to a list of the levels.
-            # self.levels2cats maps to a list of the categories corresponding to the order imposed by self.cats2levels.
             # In both self.cats2level_dicts and self.levels2cats_dicts is instead another dictionary.
             # self.cats2level_dicts maps to a map from the set of categories to the set of levels.
             # self.levels2cats_dicts maps to a map from the set of levels to the set of categories.
@@ -189,7 +188,6 @@ class Data:
                 if datum.name == "categorical":
                     self.cats2levels[self.whole_headers[index]] = []
                     self.cats2level_dicts[self.whole_headers[index]] = {}
-                    self.levels2cats[self.whole_headers[index]] = []
                     self.levels2cats_dicts[self.whole_headers[index]] = {}
 
             # This behemoth is the data interpretation, validation, and categorization structure.
@@ -333,6 +331,7 @@ class Data:
         # Handy function I added for ease in my matrix class.
         # Completely unnecessary as it makes my module less portable, but whatever, convenience.
         self.data = self.data_array.to_numpy()
+        self.data_copy = self.data.copy()
         # Defines all our referencable values in terms of indexes of the new matrix.
         self.headers = []
         self.header2col = {}
@@ -392,6 +391,7 @@ class Data:
         Then instead of returning out_string we return "".join(out_list).
         The performance was drastically faster. In fact, it was about 46.87 times faster.
         """
+        row_stop = 5
         # Initialize list storing maximum of set of length of string representation for all entries in each column.
         sizes = []
         # Initialize list storing data type for each column.
@@ -454,7 +454,7 @@ class Data:
         # Remove excess "┼".
         out_list.pop(-1)
         out_list.append("┤\n")
-        rows = self.data_array.row_set()
+        rows = self.data.tolist()
         row_count = len(rows)
         # Calculates order of the row count for the dataset, ie floor of the base 10 log of the row count.
         order = math.floor(math.log10(row_count))
@@ -485,8 +485,29 @@ class Data:
                 if data_type.name == "categorical":
                     # category.name (category.level)
                     fill = self.levels2cats_dicts[self.col2header[index]][int(entry)] + " (" + str(entry) + ")"
+                if ind == row_stop and row_stop != 0:
+                    fill = "..."
                 out_list.append(sizer.format(str(fill)) + "│")
             out_list.append("\n")
+            if ind == row_stop and row_stop != 0:
+                out_list.append("│")
+                ind_d = row_count-1
+                row_d = rows[ind_d]
+                for index, entry in enumerate(row_d):
+                    # Determine data type for each entry using local reference list.
+                    data_type = data_types[index]
+                    fill = entry
+                    # Get size.
+                    size = sizes[index]
+                    # Create a truncation and alignment formatting string.
+                    sizer = '{:^' + str(size) + '.' + str(size) + '}'
+                    # String representation of categorical data.
+                    if data_type.name == "categorical":
+                        # category.name (category.level)
+                        fill = self.levels2cats_dicts[self.col2header[index]][int(entry)] + " (" + str(entry) + ")"
+                    out_list.append(sizer.format(str(fill)) + "│")
+                out_list.append("\n")
+                break
         # Create lower border for table.
         out_list.append("└")
         for s in sizes:
@@ -562,10 +583,7 @@ class Data:
         -----------
         Python list of nonnegative ints. shape=len(headers). The indices of the headers in `headers` list.
         """
-        output = []
-        for header in headers:
-            output.append(self.header2col[header])
-        return output
+        return [self.header2col[header] for header in headers]
 
     def get_all_data(self):
         """Gets a copy of the entire dataset
@@ -635,12 +653,13 @@ class Data:
 
         Hint: For selecting a subset of rows from the data ndarray, check out np.ix_
         """
-        if rows is None:
-            rows = []
-        temp_array = self.data
-        if len(rows) != 0:
-            temp_array = self.data[[rows], :][0]
-        return temp_array[:, self.get_header_indices(headers)]
+        output = self.get_all_data()
+        heads = self.get_header_indices(headers)
+
+        if rows is not None and len(rows) != 0:
+            output = output[list(rows)]
+        output = output[:, heads]
+        return output
 
 
 def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, Dict[str, int]],
@@ -672,7 +691,6 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
     data_output = data.tolist()
 
     # Creates a matrix object from the data_output list.
-    data_array = m.Matrix(0, 0, data_output)
 
     # This next section allows us to convert some of the passed in variables into variables that we need but were not provided.
     # This allows us to require less parameter inputs, allowing for my and the users' sanity to be maintained.
@@ -693,28 +711,7 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
     for index, word in enumerate(headers):
         col2header[index] = word
 
-    # A pretty complex map and lambda function that allow us to map each key in the cats2level_dicts dictionary
-    # to a list of two elements, that key in the 0th index,
-    # and a dictionary mapping each value in cats2level_dicts to its corresponding key in the 1st index.
-    # What this allows us to do is essentially map each key in cats2level_dicts to a mirror of cats2level_dicts.
-    flip_map = map(lambda x: [x, dict(zip(cats2level_dicts[str(x)].values(), cats2level_dicts[str(x)].keys()))],
-                   list(cats2level_dicts.keys()))
-    # Initiate two empty lists for the keys and values of the dictionary.
-    lc_keys = []
-    lc_vals = []
-
-    # We use our previously defined flip map and separate the list of lists into two lists.
-    # One of 0th entries and one of 1st entries.
-    for entry in flip_map:
-        lc_keys.append(entry[0])
-        lc_vals.append(entry[1])
-
-    # We now use the zip and dict function to create a new dictionary, defined such that:
-    # Each key, k, in cats2level_dicts is mapped to a dictionary.
-    # Each of these dictionaries maps the values of the dictionary corresponding to k in cats2level_dicts,
-    # to the keys of the dictionary corresponding to k in cats2level_dicts.
-    # This definition is equivalent to that of levels2cats_dicts in our data structure, thus we set levels2cats_dicts to this new dictionary.
-    levels2cats_dicts = dict(zip(lc_keys, lc_vals))
+    levels2cats_dicts = {k: {v: k for k, v in cats2level_dicts[str(k)].items()} for k in cats2level_dicts.keys()}
 
     # Initialize list storing maximum of set of length of string representation for all entries in each column.
     sizes = []
@@ -776,7 +773,7 @@ def data2str(data: np.ndarray, headers: List[str], cats2level_dicts: Dict[str, D
     # Remove excess "┼".
     out_list.pop(-1)
     out_list.append("┤\n")
-    rows = data_array.row_set()
+    rows = data_output
     row_count = len(rows)
     # Calculates order of the row count for the dataset, ie floor of the base 10 log of the row count.
     order = math.floor(math.log10(row_count))

@@ -5,9 +5,8 @@ class DataTypes(Enum):
     """
     Represents the data types that can be stored in a `Data` object
     """
-    Enum = Enum
     numeric, categorical, string, date, missing = range(5)
-    member_names_ = ["numeric", "categorical", "string", "date", "missing"]
+    Enum.member_names_ = ["numeric", "categorical", "string", "date", "missing"]
 
     def __getitem__(self, item):
         type_match = {

@@ -1,15 +1,15 @@
-'''charts.py
+"""charts.py
 Plotting functions for categorical data
 YOUR NAME HERE
 CS 251: Data Analysis and Visualization
 Spring 2024
-'''
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 def sidebarplot(values, labels, title, show_counts=True, figsize=(6, 7)):
-    '''Horizontal bar plot with bar lengths `values` (the "x values") with associated labels `labels` on the y axis.
+    """Horizontal bar plot with bar lengths `values` (the "x values") with associated labels `labels` on the y axis.
 
     Parameters:
     -----------
@@ -24,12 +24,12 @@ def sidebarplot(values, labels, title, show_counts=True, figsize=(6, 7)):
         ax = plt.barh(...)
     If show_counts is set to True, then add the code:
         if show_counts:
-            plt.bar_label(ax, values)    
+            plt.bar_label(ax, values)
     to make the values appear on the plot as text next to each bar.
     - If your values show up next to the bars with many significant digits, add the following line of code to have Numpy
     round each displayed value to the nearest 0.01:
         values = np.round(values, 2)
-    '''
+    """
     plt.figure(figsize=figsize)
     values = np.round(values, 2)
     ax = plt.barh(np.arange(len(values)), values, align='center', color='#ffffff', edgecolor='#000000')
@@ -44,7 +44,7 @@ def sidebarplot(values, labels, title, show_counts=True, figsize=(6, 7)):
 
 
 def sort(values, labels, sort_by='na'):
-    '''Sort the arrays `values` and `labels` in the same way so that corresponding items in either array stay matched up
+    """Sort the arrays `values` and `labels` in the same way so that corresponding items in either array stay matched up
     after the sort.
 
     Parameters:
@@ -64,14 +64,13 @@ def sort(values, labels, sort_by='na'):
 
     NOTE:
     - np.argsort might be helpful here.
-    '''
-    mapping = {'na': range(len(values)), 'value': values, 'label': labels}
-    args = np.argsort(mapping[sort_by])
+    """
+    args = np.argsort({'na': range(len(values)), 'value': values, 'label': labels}+[sort_by])
     return values[args], labels[args]
 
 
 def grouped_sidebarplot(values, header1_labels, header2_levels, title, figsize=(6, 7)):
-    '''Horizontal side-by-side bar plot with bar lengths `values` (the "x values") with associated labels.
+    """Horizontal side-by-side bar plot with bar lengths `values` (the "x values") with associated labels.
     `header1_labels` are the levels of `header`, which appear on the y axis. Each level applies to ONE group of bars next
     to each other. `header2_labels` are the levels that appear in the legend and correspond to different color bars.
 
@@ -105,5 +104,5 @@ def grouped_sidebarplot(values, header1_labels, header2_levels, title, figsize=(
 
     NOTE:
     - You can use plt.barh, but there are offset to compute between the bars...
-    '''
+    """
     pass
