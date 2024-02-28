@@ -1,12 +1,11 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class DataTypes(Enum):
+class DataTypes(StrEnum):
     """
     Represents the data types that can be stored in a `Data` object
     """
-    numeric, categorical, string, date, missing = range(5)
-    Enum.member_names_ = ["numeric", "categorical", "string", "date", "missing"]
+    numeric, categorical, string, date, missing = ["numeric", "categorical", "string", "date", "missing"]
 
     def __getitem__(self, item):
         type_match = {

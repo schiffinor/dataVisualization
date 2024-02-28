@@ -15,7 +15,7 @@ import numpy as np
 
 import matrix as m
 from dataTypes import DataTypes as dT
-from dataTypesTrim import DataTypes as dTT
+from dataTypesTrim import DataTypesTrim as dTT
 
 
 class Data:
@@ -153,7 +153,7 @@ class Data:
                 # print("Data type: {}".format(data_type))
 
                 # Verify whether data type is accepted.
-                if data_type not in self.dTRef.member_names_:
+                if data_type not in self.dTRef.__members__:
                     print("Invalid data type: {}\nIgnoring Column.\n".format(data_type))
                     data_types.append(self.dTRef["missing"])
                 else:

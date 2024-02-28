@@ -48,7 +48,8 @@ class Analysis:
             raise ValueError("Arrays must be 1D")
         if np.array_equal(a, b):
             return 0
-        return np.sqrt(np.sum((b-a)**2, axis=0))
+        c = b-a
+        return np.sqrt(np.einsum('i,i->', c, c))
 
     @staticmethod
     def lp_norm(a: np.ndarray, b: np.ndarray, p: int):
@@ -398,7 +399,6 @@ class Analysis:
         centralities = self.l_centrality(headers, rows, metric)
         maximum = np.argmax(centralities)
         return data_selection[np.argmax(centralities)], maximum
-
 
 
 
