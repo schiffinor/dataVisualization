@@ -126,7 +126,7 @@ class CatData(data.Data):
         """
         self.data = self.data_copy
 
-    def filter(self, header, strlevel):
+    def filter(self, header, strlevel, func: function =__eq__):
         """Filters dataset to select samples (i.e. rows) only for which the value of the categorical variable `header`
         is equal to `strlevel`. The filtered dataset should replace `self.data`.
 
@@ -142,4 +142,4 @@ class CatData(data.Data):
         - Logical indexing requires that the array being used to index another has shape=`(N,)` instead of shape=`(N,1)`.
         Therefore, `np.squeeze` might be helpful...
         """
-        self.data = self.data[self.data[:, self.header2col[header]] == self.cats2level_dicts[header][strlevel]]
+        self.data = self.data[self.data[:, self.header2col[header]].__array_function__() == self.cats2level_dicts[header][strlevel]]
