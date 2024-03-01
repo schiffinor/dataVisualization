@@ -323,22 +323,54 @@ class Analysis:
 
         NOTE: There should be no loops in this method!
         """
-        norm = self.l_inf_norm
         if metric == self.l1_norm:
-            norm = self.l1_norm
+            norm = 1
         elif metric == self.l2_norm:
-            norm = self.l2_norm
+            norm = 2
+        elif metric == self.lp_norm:
+            raise ValueError("Lp norm not supported")
+        elif metric == self.l_inf_norm:
+            norm = "inf"
+        else:
+            raise ValueError("Invalid metric")
 
-        data_selection = self.data.select_data(headers, rows)
-        point_count = data_selection.shape[0]
-        distance_array = np.ndarray(shape=(point_count, point_count))
-        for i in range(point_count):
-            for j in range(i, point_count):
-                fill = norm(data_selection[i], data_selection[j])
-                distance_array[i, j] = fill
-                if i != j:
-                    distance_array[j, i] = fill
-        return np.max(distance_array, axis=0)
+        data_selection = self.data.select_data(headers, rows).copy()
+        init_size = data_selection.shape[0]
+        rows = []
+        for i in range(init_size):
+
+            row = data_selection[0]
+            tiler = np.tile(row, (data_selection.shape[0], 1))
+            tensors = []
+            ein_string = None
+            if norm == 1:
+                ein_string = 'ijk->jk'
+                tensor1 = np.array([tiler, -data_selection])
+                tensors.append(tensor1)
+            elif norm == 2:
+                ein_string = 'ijk,ijk->j'
+                tensor1 = np.array([tiler, data_selection, -2 * tiler])
+                tensor2 = np.array([tiler, data_selection, data_selection])
+                tensors.append(tensor1)
+                tensors.append(tensor2)
+            elif norm == "inf":
+                ein_string = 'ijk->jk'
+                tensor1 = np.array([tiler, -data_selection])
+                tensors.append(tensor1)
+            else:
+                raise ValueError("Invalid norm")
+            prod_vec = np.einsum(ein_string, *tensors)
+            if norm == "inf":
+                prod_vec = np.max(np.abs(prod_vec), axis=1)
+            elif norm == 1:
+                prod_vec = np.einsum('jk->j', np.abs(prod_vec))
+            data_selection = data_selection[1:]
+            prod_vec = np.pad(prod_vec, pad_width=(i, 0))
+            rows.append(prod_vec.tolist())
+
+        np.set_printoptions(formatter={'float': '{:.2f}'.format})
+        matrix = np.einsum('ijk,ikj->jk', np.array([np.ones((len(rows), len(rows))), rows]), np.array([rows, np.ones((len(rows), len(rows)))]))
+        return np.sqrt(np.max(matrix, axis=0)) if norm == 2 else np.max(matrix, axis=0)
 
     def l_centrality_alt(self, headers, rows=None, metric=l_inf_norm):
         """Computes the L-infinity centrality for each variable in `headers` in the data object.
@@ -409,9 +441,16 @@ if __name__ == "__main__" :
     filename = 'data/vertices.csv'
     vert_data = Data(filename)
     analysis = Analysis(vert_data)
-    
-    centrality = analysis.l_centrality(["pos_x", "pos_y", "pos_z"], rows=np.random.randint(0, 1000000, 10000), metric=Analysis.l2_norm)
+
+    rowSet = np.random.randint(0, 1000000, 10000)
+    centrality = analysis.l_centrality(["pos_x", "pos_y", "pos_z"], rows=rowSet, metric=Analysis.l2_norm)
     print(centrality)
 
-    centrality_alt = analysis.l_centrality_alt(["pos_x", "pos_y", "pos_z"], rows=np.random.randint(0, 1000000, 10000), metric=Analysis.l2_norm)
-    print(centrality_alt)
+    centrality = analysis.l_centrality(["pos_x", "pos_y", "pos_z"], rows=rowSet, metric=Analysis.l1_norm)
+    print(centrality)
+
+    centrality = analysis.l_centrality(["pos_x", "pos_y", "pos_z"], rows=rowSet, metric=Analysis.l_inf_norm)
+    print(centrality)
+
+    # centrality_alt = analysis.l_centrality_alt(["pos_x", "pos_y", "pos_z"], rows=rowSet, metric=Analysis.l2_norm)
+    # print(centrality_alt)

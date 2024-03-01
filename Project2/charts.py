@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def sidebarplot(values, labels, title, show_counts=True, figsize=(6, 7)):
+def sidebarplot(values, labels, title, show_counts=True, figsize=(6, 7), sort_by='na', format_as="d"):
     """Horizontal bar plot with bar lengths `values` (the "x values") with associated labels `labels` on the y axis.
 
     Parameters:
@@ -30,17 +30,23 @@ def sidebarplot(values, labels, title, show_counts=True, figsize=(6, 7)):
     round each displayed value to the nearest 0.01:
         values = np.round(values, 2)
     """
+    formatter = {'value': '%.2f', 'percent': '%.2f%%', 'd': '%d'}[format_as]
     plt.figure(figsize=figsize)
-    values = np.round(values, 2)
+    values, labels = sort(values, labels, sort_by)
+    total = np.sum(values)
+    if format_as == "percent":
+        values = values / total * 100
     ax = plt.barh(np.arange(len(values)), values, align='center', color='#ffffff', edgecolor='#000000')
     plt.yticks(np.arange(len(values)), labels)
     plt.title(title)
     splitter = title.split(' by ')
     if len(splitter) > 1:
-        plt.xlabel(splitter[0])
-        plt.ylabel(splitter[1])
+        plt.xlabel(splitter[0], rotation=0, labelpad=20)
+        plt.ylabel(splitter[1], rotation=0, labelpad=20)
     if show_counts:
-        plt.bar_label(ax, values)
+        plt.bar_label(ax, fmt=formatter, padding=3)
+    # plt.tight_layout()
+    plt.autoscale()
 
 
 
@@ -70,7 +76,7 @@ def sort(values, labels, sort_by='na'):
     return values[args], labels[args]
 
 
-def grouped_sidebarplot(values, header1_labels, header2_levels, title, figsize=(6, 7)):
+def grouped_sidebarplot(values, header1_labels, header2_levels, title, show_counts=True, figsize=(6, 7), sort_by='na', format_as="d"):
     """Horizontal side-by-side bar plot with bar lengths `values` (the "x values") with associated labels.
     `header1_labels` are the levels of `header`, which appear on the y axis. Each level applies to ONE group of bars next
     to each other. `header2_labels` are the levels that appear in the legend and correspond to different color bars.
@@ -106,4 +112,21 @@ def grouped_sidebarplot(values, header1_labels, header2_levels, title, figsize=(
     NOTE:
     - You can use plt.barh, but there are offset to compute between the bars...
     """
-    pass
+    formatter = {'value': '%.2f', 'percent': '%.2f%%', 'd': '%d'}[format_as]
+    plt.figure(figsize=figsize)
+    num_groups = len(header1_labels)
+    num_bars = len(header2_levels)
+    bar_width = 0.8 / num_bars
+    for i in range(num_groups):
+        ys = np.arange(num_bars) + i * bar_width
+        sub = plt.barh(ys, values[i], bar_width, label=header1_labels[i])
+        plt.bar_label(sub, fmt=formatter, padding=3)
+    plt.yticks(np.arange(num_bars) + bar_width * (num_groups - 1) / 2, header2_levels)
+    plt.title(title)
+    splitter = title.split(' by ')
+    if len(splitter) > 1:
+        plt.xlabel(splitter[0], labelpad=20)
+        plt.ylabel(splitter[1], labelpad=20)
+    plt.legend()
+    plt.autoscale()
+
