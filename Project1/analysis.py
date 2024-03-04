@@ -342,7 +342,6 @@ class Analysis:
             row = data_selection[0]
             tiler = np.tile(row, (data_selection.shape[0], 1))
             tensors = []
-            ein_string = None
             if norm == 1:
                 ein_string = 'ijk->jk'
                 tensor1 = np.array([tiler, -data_selection])

@@ -76,8 +76,9 @@ def sort(values, labels, sort_by='na'):
     return values[args], labels[args]
 
 
-def grouped_sidebarplot(values, header1_labels, header2_levels, title, show_counts=True, figsize=(6, 7), sort_by='na', format_as="d"):
-    """Horizontal side-by-side bar plot with bar lengths `values` (the "x values") with associated labels.
+def grouped_sidebarplot(values: np.ndarray, header1_labels, header2_levels, title, show_counts=True, figsize=(6, 7), format_as="d"):
+    """
+    Horizontal side-by-side bar plot with bar lengths `values` (the "x values") with associated labels.
     `header1_labels` are the levels of `header`, which appear on the y axis. Each level applies to ONE group of bars next
     to each other. `header2_labels` are the levels that appear in the legend and correspond to different color bars.
 
@@ -114,19 +115,36 @@ def grouped_sidebarplot(values, header1_labels, header2_levels, title, show_coun
     """
     formatter = {'value': '%.2f', 'percent': '%.2f%%', 'd': '%d'}[format_as]
     plt.figure(figsize=figsize)
+    total = np.sum(values)
     num_groups = len(header1_labels)
     num_bars = len(header2_levels)
     bar_width = 0.8 / num_bars
+    values = values
+    sums_main = np.sum(values, axis=1)
+    sub_sums = np.sum(values, axis=0)
+    header1_labels = sort(header1_labels, sums_main, 'label')[0]
+    header2_levels = sort(header2_levels, sub_sums, 'label')[0]
+    values = sort(values, sums_main, 'label')[0]
     for i in range(num_groups):
-        ys = np.arange(num_bars) + i * bar_width
-        sub = plt.barh(ys, values[i], bar_width, label=header1_labels[i])
-        plt.bar_label(sub, fmt=formatter, padding=3)
-    plt.yticks(np.arange(num_bars) + bar_width * (num_groups - 1) / 2, header2_levels)
+        value_row = values[i]
+        value_row = sort(value_row, sub_sums, 'label')[0]
+        values[i] = value_row
+    plots = []
+    for i in range(num_bars):
+        value_set = values[:, i]
+        if format_as == "percent":
+            value_set = value_set / total * 100
+        ys = np.arange(num_groups) + i * bar_width
+        sub = plt.barh(ys, value_set, bar_width, align='center', label=header2_levels[i])
+        plots.append(sub)
+        if show_counts:
+            plt.bar_label(sub, fmt=formatter, padding=3)
+    plt.yticks(np.arange(num_groups) + bar_width * (num_bars - 1) / 2, header1_labels)
     plt.title(title)
     splitter = title.split(' by ')
     if len(splitter) > 1:
         plt.xlabel(splitter[0], labelpad=20)
         plt.ylabel(splitter[1], labelpad=20)
-    plt.legend()
+    plt.legend(title='Type', bbox_to_anchor=(1.05, 1.0), loc='upper left', reverse=True)
     plt.autoscale()
 

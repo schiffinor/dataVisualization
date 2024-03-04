@@ -20,3 +20,5 @@ header1_labels = ['Group 1', 'Group 2']
 header2_levels = ['Category 1', 'Category 2', 'Category 3']
 title = 'Test Plot 3'
 grouped_sidebarplot(values, header1_labels, header2_levels, title)
+
+# Test case 4

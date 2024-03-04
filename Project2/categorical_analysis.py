@@ -190,4 +190,4 @@ class CatAnalysis(analysis.Analysis):
         NOTE:
         - To combine two logical arrays element-wise, you can use the & operator or np.logical_and
         """
-        return np.array(list(list(np.sum(np.logical_and(self.data.data[:, self.data.header2col[header2]] == level2, self.data.data[:, self.data.header2col[header1]] == level1)) for level2 in self.data.get_cat_levels_int(header2)) for level1 in self.data.get_cat_levels_int(header1))), self.data.get_cat_levels_str(header1), self.data.get_cat_levels_str(header2)
+        return np.array([[np.sum(np.logical_and(self.data.data[:, self.data.header2col[header2]] == level2, self.data.data[:, self.data.header2col[header1]] == level1)) for level2 in self.data.get_cat_levels_int(header2)] for level1 in self.data.get_cat_levels_int(header1)]), self.data.get_cat_levels_str(header1), self.data.get_cat_levels_str(header2)
