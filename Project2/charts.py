@@ -115,7 +115,6 @@ def grouped_sidebarplot(values: np.ndarray, header1_labels, header2_levels, titl
     """
     formatter = {'value': '%.2f', 'percent': '%.2f%%', 'd': '%d'}[format_as]
     plt.figure(figsize=figsize)
-    total = np.sum(values)
     num_groups = len(header1_labels)
     num_bars = len(header2_levels)
     bar_width = 0.8 / num_bars
@@ -130,10 +129,11 @@ def grouped_sidebarplot(values: np.ndarray, header1_labels, header2_levels, titl
         value_row = sort(value_row, sub_sums, 'label')[0]
         values[i] = value_row
     plots = []
+    total = np.sum(values, axis=0)
     for i in range(num_bars):
         value_set = values[:, i]
         if format_as == "percent":
-            value_set = value_set / total * 100
+            value_set = value_set / total[i] * 100
         ys = np.arange(num_groups) + i * bar_width
         sub = plt.barh(ys, value_set, bar_width, align='center', label=header2_levels[i])
         plots.append(sub)
