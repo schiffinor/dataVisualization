@@ -7,6 +7,7 @@ Spring 2024
 '''
 import time
 
+import numpy
 import numpy as np
 import scipy.linalg as sla
 import matplotlib.pyplot as plt
@@ -16,6 +17,9 @@ from regressTypes import *
 from data import Data
 import scipy.fft as sfft
 import scipy.signal.windows as swa
+import numpy.polynomial.polynomial as npp
+from mpl_toolkits import mplot3d
+from scipy import signal
 
 import analysis
 
@@ -97,7 +101,6 @@ class LinearRegression(analysis.Analysis):
         self.residuals = self.compute_residuals(predicts)
         self.R2 = self.r_squared(predicts)
 
-
     def predict(self, X=None):
         '''Use fitted linear regression model to predict the values of data matrix self.A.
         Generates the predictions y_pred = mA + b, where (m, b) are the model fit slope and intercept,
@@ -164,7 +167,7 @@ class LinearRegression(analysis.Analysis):
         Hint: Make use of self.compute_residuals
         '''
         residuals = self.compute_residuals(y_pred)
-        return 1/len(self.y) * np.einsum('i,i->', residuals.flatten(), residuals.flatten())
+        return 1 / len(self.y) * np.einsum('i,i->', residuals.flatten(), residuals.flatten())
 
     def compute_sse(self, y_pred=None):
         '''Computes the sum of squared errors in the predicted y compared the actual y values.
@@ -200,10 +203,11 @@ class LinearRegression(analysis.Analysis):
         -----------
         float. Squared mean deviation
         '''
-        mean_errors = self.compute_residuals(1/len(self.y) * np.einsum('i->', self.y.flatten()))
-        return 1/len(self.y) * np.einsum('i,i->', mean_errors.flatten(), mean_errors.flatten())
+        mean_errors = self.compute_residuals(1 / len(self.y) * np.einsum('i->', self.y.flatten()))
+        return 1 / len(self.y) * np.einsum('i,i->', mean_errors.flatten(), mean_errors.flatten())
 
-    def scatter(self, ind_var, dep_var, title, residuals_on=False, fig_sz=(12, 10), colors=None, regression_line=True, regress_type='linear', poly_deg=1):
+    def scatter(self, ind_var, dep_var, title, residuals_on=False, fig_sz=(12, 10), colors=None, regression_line=True,
+                regress_type='linear', poly_deg=1):
         '''Creates a scatter plot with a regression line to visualize the model fit.
         Assumes linear regression has been already run.
 
@@ -281,7 +285,8 @@ class LinearRegression(analysis.Analysis):
         '''
         pass
 
-    def make_polynomial_matrix(self, A, degree):
+    @staticmethod
+    def make_polynomial_matrix(A, degree):
         '''Takes an independent variable data column vector `A and transforms it into a matrix appropriate
         for a polynomial regression model of degree `p`.
 
@@ -305,13 +310,14 @@ class LinearRegression(analysis.Analysis):
         '''
         return np.column_stack([np.power(A, i) for i in range(degree + 1)])
 
-    def comp_matrix(self, A, degree):
+    @staticmethod
+    def comp_matrix(A, degree):
         A_transpose = A.T
         mat_List = []
         index = 0
         for row in A_transpose.tolist():
             row_ = np.array(row)
-            temp_augA = self.make_polynomial_matrix(row_, degree)
+            temp_augA = LinearRegression.make_polynomial_matrix(row_, degree)
             mat_List.append(temp_augA if index == 0 else temp_augA[:, 1:])
             index += 1
         augA = np.hstack(mat_List)
@@ -343,7 +349,8 @@ class LinearRegression(analysis.Analysis):
         A_data = self.data.select_data([ind_var])
         self.multi_poly_regression(A_data, y_data, degree)
 
-    def multi_poly_regression(self, ind_vars: np.ndarray, dep_var: np.ndarray, degree: int):
+    @staticmethod
+    def multi_poly_regression(ind_vars: np.ndarray, dep_var: np.ndarray, degree: int):
         '''Perform polynomial regression — generalizes self.linear_regression to polynomial curves
         (Week 2)
         NOTE: For single linear regression only (one independent variable only)
@@ -365,24 +372,50 @@ class LinearRegression(analysis.Analysis):
             appropriate for polynomial regresssion. Do this with self.make_polynomial_matrix.
             - You set the instance variable for the polynomial regression degree (self.p)
         '''
-        augA = self.comp_matrix(ind_vars, degree)
-        print(f"augA: {augA}")
-        print(f"augA.shape: {augA.shape}")
+        augA = LinearRegression.comp_matrix(ind_vars, degree)
         c, residue, rank, s = sla.lstsq(augA, dep_var)
-        intercept = c[0][0]
-        poly_coeffs = c[1:]
-        var_poly_coeffs = poly_coeffs.reshape((degree, ind_vars.shape[1])).T
-        print(f"var_poly_coeffs: {var_poly_coeffs}")
-        var_poly_coeffs = var_poly_coeffs.reshape((ind_vars.shape[1], 1, degree))
-        print(f"var_poly_coeffs: {var_poly_coeffs.shape}")
-        print(f"var_poly_coeffs: {var_poly_coeffs}")
-        operand = LeftOperand(lambda x: intercept + np.einsum('ijk,ijl->j', np.tile(self.comp_matrix(x, degree)[np.newaxis, :, 1:], (2, 1, 1)), var_poly_coeffs)[:, np.newaxis])
+        operand = LeftOperand(lambda x: np.einsum('ij,j->i', LinearRegression.comp_matrix(x, degree), np.squeeze(c))[:, np.newaxis])
         return operand
 
-    def exponential_regression(self, ind_vars: np.ndarray, dep_var: np.ndarray):
-        pass
+    @staticmethod
+    def exponential_regression(ind_var: np.ndarray, dep_var: np.ndarray, degree: int = 1):
+        if ind_var.shape != dep_var.shape:
+            raise ValueError("ind_var and dep_var must have the same length")
+        if ind_var.ndim > 1:
+            raise ValueError("ind_var must be a single column")
+        else:
+            ind_shift = np.min(ind_var)
+            ind_var = ind_var - ind_shift
+            iy_list = [LinearRegression.d_int(ind_var, dep_var)]
+            i_s = ["iy"]
+            for i in range(degree - 1):
+                iy_list.append(LinearRegression.d_int(ind_var, iy_list[-1]))
+                i_s.append("i" + i_s[-1])
+            augA = np.column_stack(iy_list)
+            augA = np.hstack([augA, np.fliplr(LinearRegression.make_polynomial_matrix(ind_var, degree))])
+            c = sla.lstsq(augA, dep_var)[0]
+            c_ = (c[:degree][:, np.newaxis]).T
+            augIdent = np.hstack([np.identity(degree - 1), np.zeros((degree - 1, 1))])
+            eigA = np.vstack([c_, augIdent])
+            lambdas = np.real(sla.eigvals(eigA))
+            linear_component_list = [np.ones(ind_var.shape[0])] + [np.exp(lambda_ * (ind_var + ind_shift)) for lambda_ in lambdas]
+            augA_2 = np.column_stack(linear_component_list) / dep_var[:, np.newaxis]
+            mega_A = np.einsum('ij,ik->ijk', augA_2, augA_2)
+            mega_dep = augA_2
+            args = (~(np.logical_or(np.isnan(mega_A), np.isinf(mega_A))).any(axis=1)).all(axis=1)
+            mega_A = mega_A[args, :, :]
+            mega_dep = mega_dep[args, :]
+            mega_A = np.einsum('ijk->jk', mega_A)
+            mega_dep = np.einsum('ij->j', mega_dep)
+            coeffs = sla.lstsq(mega_A, mega_dep)[0][np.newaxis, :]
+            print(f"lambda: {lambdas}")
+            print(f"coeffs: {coeffs}")
 
-    def sinusoidal_regression(self, ind_var: np.ndarray, dep_var: np.ndarray, degree: int):
+            operand = LeftOperand(lambda x: np.sum(coeffs * np.column_stack([np.ones(x.shape[0])] + [np.exp(lambda_ * x) for lambda_ in lambdas]), axis=1)[:, np.newaxis])
+        return operand
+
+    @staticmethod
+    def sinusoidal_regression(ind_var: np.ndarray, dep_var: np.ndarray, degree: int):
         if degree < 1:
             raise ValueError("Degree must be greater than 0")
         if degree > ind_var.shape[0] // 2:
@@ -405,12 +438,6 @@ class LinearRegression(analysis.Analysis):
         T = ind_var.max() - ind_var.min()
         freq = sfft.rfftfreq(N, (n[1] - n[0]))
 
-        print(f"fft: {fft}")
-        print(f"n: {n}")
-        print(f"freq: {freq}")
-        print(f"sr: {sr}")
-        print(f"T: {T}")
-
         plt.figure(figsize=(12, 6))
         plt.vlines(freq, 0, np.abs(fft), 'b')
         plt.xlabel('Freq (Hz)')
@@ -420,47 +447,30 @@ class LinearRegression(analysis.Analysis):
         fftMag = 2 * np.abs(fft) / np.sum(window)
         fftMag[0] = fftMag[0] / 2
         fftPhase = np.angle(fft)
-        print(f"fftMag: {fftMag}")
-        print(f"fftPhase: {fftPhase}")
 
         # Index of max
         maxIndex = np.argpartition(fftMag[0:N // 2 + 1], -degree)[-degree:]
-        print(f"maxIndex: {maxIndex}")
 
         # Calculate the amplitude
         amps = fftMag[maxIndex]
         # Calculate the frequency
         maxFreq = freq[maxIndex]
-        '''if 0 in maxFreq:
-            raise ValueError("Degree too high for sinusoidal regression!\n 0 frequency found in maxFreq.")
-        '''# Calculate the phase shift
+        # Calculate the phase shift
         phaseShift = fftPhase[maxIndex] + np.pi / 2
 
-        print(f"Amplitude: {amps}")
-        print(f"Frequency: {maxFreq}")
-        print(f"Phase: {phaseShift}")
         x_data_ = ind_var[sort][:, np.newaxis]
         line_y_ = np.sum(amps * np.sin(2 * np.pi * maxFreq * x_data_ + phaseShift), axis=1)
         label_preComp = [
             f"{amps[i]:.2f}sin(2π*{maxFreq[i]: .2f}*x + {phaseShift[i]: .2f})"
             for i in range(len(amps))]
         label_comp = "y = " + " + ".join(label_preComp)
-        print(dep_var.shape)
-        print(line_y_.shape)
         residue = np.einsum('i,i->', dep_var[sort] - line_y_, dep_var[sort] - line_y_)
-        print(f"Residue: {residue}")
         mean = np.mean(dep_var[sort])
         smd = np.einsum('i,i->', dep_var[sort] - mean, dep_var[sort] - mean)
         r2 = 1 - (residue / smd)
-        print(f"smd: {smd}")
-        print(f"r2: {r2}")
         operand = LeftOperand(lambda x: np.sum(amps * np.sin(2 * np.pi * maxFreq * x + phaseShift), axis=1))
-        print(line_y_.shape)
         residue = np.einsum('i,i->', dep_var[sort] - line_y_, dep_var[sort] - line_y_)
-        print(f"Residue: {residue}")
         r2 = 1 - (residue / smd)
-        print(f"smd: {smd}")
-        print(f"r2: {r2}")
         plt.figure(figsize=(20, 10))
         plt.plot(n, operand | (n[:, np.newaxis]), "r", label=label_comp)
         plt.scatter(ind_var, dep_var)
@@ -511,7 +521,7 @@ class LinearRegression(analysis.Analysis):
         elif regress_type == 'exponential':
             if ind_count > 1:
                 raise ValueError("Exponential regression only supports one independent variable")
-            slope, intercept, predicts, residuals, R2 = self.exponential_regression(A, y)
+            operand = self.exponential_regression(A, y)
         elif regress_type == 'sinusoidal':
             if ind_count > 1:
                 raise ValueError("Sinusoidal regression only supports one independent variable")
@@ -521,9 +531,6 @@ class LinearRegression(analysis.Analysis):
             slope, intercept, predicts, residuals, R2 = self.mixed_regression(A, y, degree)
         else:
             raise ValueError(f"regress_type must be one of {RegressTypes}")
-
-
-
 
     def get_fitted_slope(self):
         '''Returns the fitted regression slope.
@@ -566,7 +573,8 @@ class LinearRegression(analysis.Analysis):
         '''
         pass
 
-    def d_derivative(self, x: np.ndarray, y: np.ndarray):
+    @staticmethod
+    def d_derivative(x: np.ndarray, y: np.ndarray):
         '''
         Calculates an approximate derivative of the data,
         :param self:
@@ -593,15 +601,53 @@ class LinearRegression(analysis.Analysis):
         dy_dx_mat = np.nanmean(dy_dx_d_mat, axis=1)
         return dy_dx_mat
 
+    @staticmethod
+    def d_int(x: np.ndarray, y: np.ndarray):
+        '''
+        Calculates an approximate derivative of the data,
+        :param self:
+        :param x:
+        :param y:
+        :return:
+        '''
+        if x.shape != y.shape:
+            raise ValueError("x and y must have the same length")
+        if x.shape[0] < 2:
+            raise ValueError("x and y must have at least 2 elements")
+        arg = x.argsort()
+        x_mod = x[arg]
+        y_mod = y[arg]
+        comp_mat_x_up = np.column_stack([-x_mod, np.roll(x_mod, -1)])[:-1]
+        comp_mat_y_up = np.column_stack([-y_mod, np.roll(y_mod, -1)])[:-1]
+        dx_mat = np.array(np.einsum('ij->i', comp_mat_x_up)).tolist()
+        dy_mat = np.array(np.einsum('ij->i', comp_mat_y_up)).tolist()
+        accum = [0]
+        for i in range(x.shape[0] - 1):
+            accum.append(dx_mat[i] * (y_mod[i] + (1 / 2) * dy_mat[i]) + accum[-1])
+        cum_sum = np.array(accum)
+        return cum_sum
+
 
 if __name__ == '__main__':
+    '''
     data = Data('data/iris.csv')
     analysis = LinearRegression(data)
     # Create a simple linear function y = 2x^2 + 3
-    x_ = np.arange(0, 10, 0.1)
-    y_ = 2 * x_ * x_ + 3
+    x_ = np.linspace(0, 10, 500)
+    y_ = 2 * x_ ** 2 + 3
 
-    # Calculate derivative
+    integral = LinearRegression.d_int(x_, y_)
+
+    # Since y = 2x^2 + 3 is a linear function, its integral is (2/3)x^3 + 3x + C
+    # Let's compare the calculated integral with the expected integral
+    expected_integral = (2 / 3) * x_ ** 3 + 3 * x_ + 0
+    print("Calculated integral: ", integral)
+    print("Expected integral: ", expected_integral)
+    np.testing.assert_allclose(integral, expected_integral, rtol=1e-4)
+
+    print("Integral tests passed!")
+    '''
+    '''# Calculate derivative
     derivative = analysis.d_derivative(x_, y_)
 
     # Since y = 2x^2 + 3 is a linear function, its derivative is 4x
@@ -613,8 +659,7 @@ if __name__ == '__main__':
 
     # Perform sinusoidal regression
     data = np.genfromtxt("Lab03a/data/mystery_data_1.csv", delimiter=",")[2:]
-    print(data[:10])
-    print(data.shape)
+
 
     x_dat = data[:, 0]
     y_dat = data[:, 1]
@@ -622,30 +667,58 @@ if __name__ == '__main__':
 
     x_m = np.linspace(0, 4 * np.pi, 5000)
     y_m = 2 * np.sin(x_m) + 3 * np.sin(2 * x_m) + 4 * np.sin(3 * x_m) + 5 + np.random.uniform(-0.5, 0.5, 5000)
-    print(f"x_m: {x_m}")
-    print(f"y_m: {y_m}")
     operand, label = analysis.sinusoidal_regression(x_m, y_m, 4)
-    print("Label: ", label)
-    print(f"Operand: {operand | x_m[:, np.newaxis]}")
     plt.plot(x_m, operand | x_m[:, np.newaxis], "r", label=label)
     plt.scatter(x_m, y_m)
     plt.xlabel("X")
     plt.ylabel("Y", rotation=0, labelpad=10)
     plt.legend()
     plt.show()
-    print(f"Operand: {operand | np.array([0,1,2,3,4])[:, np.newaxis]}")
     # Get fitted slope and intercept
-    x_m = np.linspace(-10, 10, 5000)
-    z_m = np.linspace(-10, 10, 5000)
-    y_m = x_m**2 + np.random.uniform(-0.5, 0.5, 5000)
+    x_m = np.linspace(-10, 10, 100)
+    z_m = np.linspace(-10, 10, 100)
+    y_m = x_m ** 2 + np.random.uniform(-0.5, 0.5, 100)
     operand = analysis.multi_poly_regression(x_m[:, np.newaxis], y_m[:, np.newaxis], 2)
-    print("Label: ", label)
-    print(f"Operand: {operand | x_m[:, np.newaxis]}")
-    print(operand | x_m[:, np.newaxis])
     plt.plot(x_m, operand | x_m[:, np.newaxis], "r", label=label)
     plt.scatter(x_m, y_m)
     plt.legend()
     plt.show()
-    print(f"Operand: {operand | np.array([0, 1, 2, 3, 4])[:, np.newaxis]}")
+    y_m = x_m ** 2 + z_m * (z_m - 5) * (z_m + 5) + np.random.uniform(-0.5, 0.5, 100)
+    zloperand = np.column_stack([x_m[:, np.newaxis], z_m[:, np.newaxis]])
+    operand = analysis.multi_poly_regression(zloperand, y_m[:, np.newaxis], 3)
+    plt.close()
+    fig, ax = plt.subplots(figsize=(20, 10), subplot_kw={"projection": '3d'})
+    ax.scatter3D(x_m, z_m, y_m)
+    ax.plot3D(x_m, z_m, np.squeeze(operand | zloperand), "r", label=label)
+    fig.show()
+    fig.canvas.draw()
+    renderer = fig.canvas.get_renderer()
+    """
+    for angle in range(0, 360):
+        ax.view_init(angle, 30)
+        fig.canvas.draw()
+        ax.draw(renderer)
+        plt.pause(.001)
+    for angle in range(0, 360):
+        ax.view_init(0, angle)
+        fig.canvas.draw()
+        ax.draw(renderer)
+        plt.pause(.001)
+    """
+
+    fig.show()
+'''
+    # Perform Exponential regression
+    x_m = np.linspace(-10, 10, 5000)
+    y_m = (30 + 2 * np.exp(3 * x_m) + 4 * np.exp(2 * x_m) + 6 * np.exp(4 * x_m) + np.random.uniform(-5, 5, 5000))
+    # + np.random.uniform(-0.5, 0.5, 5000)
+    operand = LinearRegression.exponential_regression(x_m, y_m, 3)
+    print(f"Operand: {operand | x_m}")
+    plt.plot(x_m, operand | x_m[:, np.newaxis], "r")
+    plt.scatter(x_m, y_m)
+    plt.xlabel("X")
+    plt.ylabel("Y", rotation=0, labelpad=10)
+    plt.legend()
+    plt.show()
     # Get fitted slope and intercept
     print("All tests passed!")
