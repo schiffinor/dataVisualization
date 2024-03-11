@@ -31,3 +31,4 @@ class RegressTypes(StrEnum):
             return True
         else:
             return False
+
