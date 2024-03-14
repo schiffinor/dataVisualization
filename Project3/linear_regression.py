@@ -299,6 +299,9 @@ class LinearRegression(analysis.Analysis):
             else:
                 axis.set_xlabel('X')
                 axis.set_ylabel('Y', labelpad=10, rotation=0)
+        else:
+            if R2 is not None:
+                axis.set_title(f" R^2 = {R2:.2f}")
         if residuals_on:
             if residuals is None:
                 predict = operand | x_data
@@ -307,7 +310,7 @@ class LinearRegression(analysis.Analysis):
                 axis2 = divider.append_axes("bottom", size='25%', pad=0, yticks=np.linspace(np.min(residuals), np.max(residuals), 5))
             else:
                 axis2 = divider.append_axes("bottom", size='25%', pad=0)
-            axis.figure.add_axes(axis2)
+            figure.add_axes(axis2)
             axis2.vlines(x_data, 0, residuals, color='purple', alpha=0.5)
             axis2.axhline(0, color="teal")
             if not alt_mode:
@@ -317,6 +320,11 @@ class LinearRegression(analysis.Analysis):
                 else:
                     axis2.set_xlabel('X')
                 axis2.set_ylabel("Residuals")
+
+                legend = figure.legend(title="Regression", bbox_to_anchor=(0.07, 0.015), loc="lower left")
+                legend._legend_box.align = "left"
+                figure.subplots_adjust(bottom=0.15)
+            return figure, axis, axis2
         if not alt_mode:
             legend = figure.legend(title="Regression", bbox_to_anchor=(0.07, 0.015), loc="lower left")
             legend._legend_box.align = "left"
@@ -347,19 +355,36 @@ class LinearRegression(analysis.Analysis):
         '''
         size = len(data_vars)
         figure = plt.figure(figsize=fig_sz, layout="compressed")
-        axes = figure.subplots(size, size, sharex='col', sharey='row')
+        axes = figure.subplots(size, size, sharex="col", sharey="row" if not hists_on_diag else False)
         for row, dep in enumerate(data_vars):
             for col, ind in enumerate(data_vars):
+                place = axes[row, col]
                 ind_data = self.data.select_data([ind])
                 dep_data = self.data.select_data([dep])
                 reg = self.regression(ind_data, dep_data, plot_on=True, regress_type=reg_type, degree=degree, alt_out=True)[2]
-                figures, place = self.scatter(*reg[0], **reg[1], alt_mode=True, fig=figure, axes=axes[row, col])
+                if row == col and hists_on_diag:
+                    place = axes[row, col]
+                    place.hist(ind_data, bins=20, color='purple', alpha=0.5)
+                    place_sub = place
+                else:
+                    index = 0 if row != 0 else size-1
+                    ax1 = axes[row, index]
+                    figures, place, place_sub = self.scatter(*reg[0], **reg[1], alt_mode=True, fig=figure, axes=place)
+                    if col != index and hists_on_diag:
+                        place.sharey(ax1)
+                if hists_on_diag:
+                    if col != row and (col != 0 and (row != 0 or col != 1)):
+                        place.tick_params(labelleft=False)
+                        place_sub.set_yticks([])
+                elif col != 0 and (row != 0 or col != 1):
+                    place_sub.set_yticks([])
                 if row == size - 1:
-                    place.set_xlabel(ind, labelpad=40)
+                    place_sub.set_xlabel(ind)
+                elif row != col or not hists_on_diag:
+                    place_sub.set_xticks([])
                 if col == 0:
                     place.set_ylabel(dep)
         figure.suptitle(title)
-        return figure
 
     @staticmethod
     def make_polynomial_matrix(A, degree):
@@ -492,7 +517,7 @@ class LinearRegression(analysis.Analysis):
             for j in range(1, ind_vars.shape[1] + 1):
                 label_preComp += [f"{c[i][0]:.2f}x_{j}^{i}" for i in range(1, degree + 1)]
         label_comp = f"y = {c[0][0]}" + " + ".join(label_preComp)
-        operand = LeftOperand(lambda x: np.einsum('ij,j->i', LinearRegression.comp_matrix(x, degree), np.squeeze(c))[:, np.newaxis])
+        operand = LeftOperand(lambda x: np.einsum('ij,j->i', LinearRegression.comp_matrix(x, degree), np.squeeze(c)))
         return operand, label_comp
 
     @staticmethod
@@ -532,7 +557,7 @@ class LinearRegression(analysis.Analysis):
             lambdas_ = lambdas.flatten().tolist()
             operand = LeftOperand(lambda x: np.sum(coeffs * np.column_stack([np.ones(x.shape[0])] + [np.exp(lambda_ * x) for lambda_ in lambdas]), axis=1))
             label_preComp = [f"{coeffs_[i + 1]:.2f}e^({lambdas_[i]: .2f}x)" for i in range(len(lambdas_))]
-            label_comp = f"y = {coeffs_[0]} + " + " + ".join(label_preComp)
+            label_comp = f"y = {coeffs_[0]:.2f} + " + " + ".join(label_preComp)
         return operand, label_comp
 
     @staticmethod
@@ -589,7 +614,7 @@ class LinearRegression(analysis.Analysis):
 
     def regression(self, ind_vars_: List[str] | np.ndarray, dep_var_: str | np.ndarray,
                    regress_type: RegressTypes = RegressTypes.linear, degree: int = 1, plot_on: bool = False,
-                   no_size: bool = False, alt_out = False):
+                   no_size: bool = False, alt_out=False):
         '''
         Perform a regression of type `regress_type` on the independent variables `ind_vars` and dependent variable `dep_var`.
 
@@ -670,7 +695,7 @@ class LinearRegression(analysis.Analysis):
         if plot_on:
             if ind_count == 1:
                 args = [A[:, 0], y, f"{ind_vars[0]} by {dep_var} with {regress_type} Regression (R^2 = {R2:.2f})"]
-                kwargs = {"operand": opp, "reg_label": label, "residuals_on": True, "fig_sz": None}
+                kwargs = {"operand": opp, "reg_label": label, "residuals_on": True, "fig_sz": None, "R2": R2}
                 if alt_out:
                     out = [args, kwargs]
                 else:
@@ -687,7 +712,7 @@ class LinearRegression(analysis.Analysis):
         -----------
         ndarray. shape=(num_ind_vars, 1). The fitted regression slope(s).
         '''
-        pass
+        return self.slope
 
     def get_fitted_intercept(self):
         '''Returns the fitted regression intercept.
@@ -697,7 +722,7 @@ class LinearRegression(analysis.Analysis):
         -----------
         float. The fitted regression intercept(s).
         '''
-        pass
+        return self.intercept
 
     def initialize(self, ind_vars, dep_var, slope, intercept, p):
         '''Sets fields based on parameter values.
@@ -718,7 +743,11 @@ class LinearRegression(analysis.Analysis):
         TODO:
         - Use parameters and call methods to set all instance variables defined in constructor. 
         '''
-        pass
+        self.ind_vars = ind_vars
+        self.dep_var = dep_var
+        self.slope = slope
+        self.intercept = intercept
+        self.p = p
 
     @staticmethod
     def d_derivative(x: np.ndarray, y: np.ndarray):
