@@ -584,11 +584,10 @@ class LinearRegression(analysis.Analysis):
         # get the sampling rate
         freq = sfft.rfftfreq(N, (n[1] - n[0]))
 
-        plt.figure(figsize=(12, 6))
-        plt.vlines(freq, 0, np.abs(fft), 'b')
-        plt.xlabel('Freq (Hz)')
-        plt.ylabel('FFT Amplitude |X(freq)|')
-        plt.show()
+        # plt.figure(figsize=(12, 6))
+        # plt.vlines(freq, 0, np.abs(fft), 'b')
+        # plt.xlabel('Freq (Hz)')
+        # plt.ylabel('FFT Amplitude |X(freq)|')
 
         fftMag = 2 * np.abs(fft) / np.sum(window)
         fftMag[0] = fftMag[0] / 2
