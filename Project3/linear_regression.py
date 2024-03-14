@@ -11,6 +11,7 @@ import numpy
 import numpy as np
 import scipy.linalg as sla
 import matplotlib.pyplot as plt
+import matplotlib.figure as fig__
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from Operands import *
 from typing import List, Dict
@@ -22,7 +23,7 @@ from regressTypes import RegressTypes
 import numpy.polynomial.polynomial as npp
 from mpl_toolkits import mplot3d
 from scipy import signal
-
+import matplotlib.rcsetup as rcsetup
 import analysis
 
 
@@ -64,7 +65,7 @@ class LinearRegression(analysis.Analysis):
         self.slope = None
         # intercept: float. Regression intercept
         self.intercept = None
-        self.lin_opp = LeftOperand(lambda x: self.intercept + np.einsum('ij,ji->i', x, self.slope)[:, np.newaxis])
+        self.lin_opp = LeftOperand(lambda x: self.intercept + np.einsum('ij,ji->i', x, self.slope))
         # residuals: ndarray. shape=(num_data_samps, 1)
         #   Residuals from regression fit
         self.residuals = None
@@ -95,17 +96,22 @@ class LinearRegression(analysis.Analysis):
 
         NOTE: Use other methods in this class where ever possible (do not write the same code twice!)
         '''
+        self.ind_vars = ind_vars
+        self.dep_var = dep_var
+        self.y = self.data.select_data([dep_var])
+        self.A = self.data.select_data(ind_vars)
         augA = np.hstack([np.ones((self.A.shape[0], 1)), self.A])
         c, residue, rank, s = sla.lstsq(augA, self.y)
         self.slope = c[1:]
+        c = np.squeeze(c)
         self.intercept = c[0]
         predicts = self.predict()
         self.residuals = self.compute_residuals(predicts)
         self.R2 = self.r_squared(predicts)
-        operand = LeftOperand(lambda x: self.intercept + np.einsum('ij,j->i', x, self.slope)[:, np.newaxis])
+        self.operand = LeftOperand(lambda x: self.intercept + np.einsum('ij,ji->i', x, self.slope))
         label_preComp = [f"{c[i]:.2f}x_{i}" for i in range(len(c))]
         label_comp = f"y = {c[0]}" + " + ".join(label_preComp)
-        return operand, label_comp
+        return self.operand, label_comp
 
     def predict(self, X=None):
         '''Use fitted linear regression model to predict the values of data matrix self.A.
@@ -127,7 +133,7 @@ class LinearRegression(analysis.Analysis):
         '''
         if X is None:
             X = self.A
-        return self.lin_opp | X
+        return (self.lin_opp | X)[:, np.newaxis]
 
     def r_squared(self, y_pred=None):
         '''Computes the R^2 quality of fit statistic
@@ -214,7 +220,7 @@ class LinearRegression(analysis.Analysis):
 
     def scatter(self, ind_var: str | np.ndarray, dep_var: str | np.ndarray, title: str, operand: LeftOperand = None,
                 R2: float = None, reg_label: str = "Regression", residuals_on: bool = False, residuals: np.ndarray = None,
-                fig_sz=(14, 12), colors=None):
+                fig_sz=(14, 12), colors=None, alt_mode=False, fig: fig__.Figure = None, axes: plt.Axes = None):
         '''Creates a scatter plot with a regression line to visualize the model fit.
         Assumes linear regression has been already run.
 
@@ -272,39 +278,52 @@ class LinearRegression(analysis.Analysis):
         d_range = y_max - y_min
         line_x = np.linspace(x_min, x_max, 1000)[:, np.newaxis]
         line_y = operand | line_x
-        figure, axis = plt.subplots(figsize=fig_sz, sharex=True)
+        if not alt_mode:
+            figure, axis = plt.subplots(figsize=fig_sz, sharex=True)
+        else:
+            if fig is None:
+                raise ValueError("fig must be provided")
+            if axes is None:
+                raise ValueError("index must be provided")
+            figure = fig
+            axis = axes
         divider = make_axes_locatable(axis)
         axis.scatter(x_data, y_data, color=colors[0])
         axis.plot(line_x, line_y, color=colors[1], label=reg_label)
-        axis.set_title(title)
-        splitter = title.split(' by ')
-        if len(splitter) > 1:
-            splitter = splitter[1].split(' ')
-            axis.set_ylabel(splitter[0], rotation=0 if len(splitter[0]) < 5 else 90, labelpad=10)
-        else:
-            axis.set_xlabel('X')
-            axis.set_ylabel('Y', labelpad=10, rotation=0)
+        if not alt_mode:
+            axis.set_title(title)
+            splitter = title.split(' by ')
+            if len(splitter) > 1:
+                splitter = splitter[1].split(' ')
+                axis.set_ylabel(splitter[0], rotation=0 if len(splitter[0]) < 5 else 90, labelpad=10)
+            else:
+                axis.set_xlabel('X')
+                axis.set_ylabel('Y', labelpad=10, rotation=0)
         if residuals_on:
-            axis2 = divider.append_axes("bottom", size='25%', pad=0)
-            axis.figure.add_axes(axis2)
             if residuals is None:
                 predict = operand | x_data
                 residuals = y_data - predict[:, np.newaxis]
+            if not alt_mode:
+                axis2 = divider.append_axes("bottom", size='25%', pad=0, yticks=np.linspace(np.min(residuals), np.max(residuals), 5))
+            else:
+                axis2 = divider.append_axes("bottom", size='25%', pad=0)
+            axis.figure.add_axes(axis2)
             axis2.vlines(x_data, 0, residuals, color='purple', alpha=0.5)
             axis2.axhline(0, color="teal")
-            splitter = title.split(' by ')
-            if len(splitter) > 1:
-                axis2.set_xlabel(splitter[0])
-            else:
-                axis2.set_xlabel('X')
-            axis2.set_ylabel("Residuals")
-        legend = figure.legend(title="Regression", bbox_to_anchor=(0.07, 0.015), loc="lower left")
-        legend._legend_box.align = "left"
-        figure.tight_layout()
-        figure.subplots_adjust(bottom=0.15)
-        plt.show()
+            if not alt_mode:
+                splitter = title.split(' by ')
+                if len(splitter) > 1:
+                    axis2.set_xlabel(splitter[0])
+                else:
+                    axis2.set_xlabel('X')
+                axis2.set_ylabel("Residuals")
+        if not alt_mode:
+            legend = figure.legend(title="Regression", bbox_to_anchor=(0.07, 0.015), loc="lower left")
+            legend._legend_box.align = "left"
+            figure.subplots_adjust(bottom=0.15)
+        return figure, axis
 
-    def pair_plot(self, data_vars, fig_sz=(12, 12), hists_on_diag=True):
+    def pair_plot(self, data_vars, fig_sz=(14, 14), hists_on_diag=True, reg_type: RegressTypes = RegressTypes.linear, degree=1, title=''):
         '''Makes a pair plot with regression lines in each panel.
         There should be a len(data_vars) x len(data_vars) grid of plots, show all variable pairs
         on x and y axes.
@@ -326,7 +345,21 @@ class LinearRegression(analysis.Analysis):
         every ind and dep variable pair.
         - Make sure that each plot has a title (with R^2 value in it)
         '''
-        pass
+        size = len(data_vars)
+        figure = plt.figure(figsize=fig_sz, layout="compressed")
+        axes = figure.subplots(size, size, sharex='col', sharey='row')
+        for row, dep in enumerate(data_vars):
+            for col, ind in enumerate(data_vars):
+                ind_data = self.data.select_data([ind])
+                dep_data = self.data.select_data([dep])
+                reg = self.regression(ind_data, dep_data, plot_on=True, regress_type=reg_type, degree=degree, alt_out=True)[2]
+                figures, place = self.scatter(*reg[0], **reg[1], alt_mode=True, fig=figure, axes=axes[row, col])
+                if row == size - 1:
+                    place.set_xlabel(ind, labelpad=40)
+                if col == 0:
+                    place.set_ylabel(dep)
+        figure.suptitle(title)
+        return figure
 
     @staticmethod
     def make_polynomial_matrix(A, degree):
@@ -391,6 +424,41 @@ class LinearRegression(analysis.Analysis):
         y_data = self.data.select_data([dep_var])
         A_data = self.data.select_data([ind_var])
         return self.multi_poly_regression(A_data, y_data, degree)
+
+    @staticmethod
+    def linear_regression_2(A: np.ndarray, y: np.ndarray):
+        '''
+        Performs a linear regression on the independent (predictor) variable(s) `ind_vars`
+        and dependent variable `dep_var.
+
+        Parameters:
+        -----------
+        ind_vars: Python list of strings. 1+ independent variables (predictors) entered in the regression.
+            Variable names must match those used in the `self.data` object.
+        dep_var: str. 1 dependent variable entered into the regression.
+            Variable name must match one of those used in the `self.data` object.
+
+        TODO:
+        - Use your data object to select the variable columns associated with the independent and
+        dependent variable strings.
+        - Perform linear regression by using Scipy to solve the least squares problem y = Ac
+        for the vector c of regression fit coefficients. Don't forget to add the coefficient column
+        for the intercept!
+        - Compute R^2 on the fit and the residuals.
+        - By the end of this method, all instance variables should be set (see constructor).
+
+        NOTE: Use other methods in this class where ever possible (do not write the same code twice!)
+        '''
+
+        augA = np.hstack([np.ones((A.shape[0], 1)), A])
+        c, residue, rank, s = sla.lstsq(augA, y)
+        c = np.squeeze(c)
+        slope = c[1:]
+        intercept = c[0]
+        operand = LeftOperand(lambda x: intercept + np.einsum('ij,j->i', x, slope))
+        label_preComp = [f"{slope[i]:.2f}x_{i}" for i in range(len(slope))]
+        label_comp = f"y = {intercept} + " + " + ".join(label_preComp)
+        return operand, label_comp
 
     @staticmethod
     def multi_poly_regression(ind_vars: np.ndarray, dep_var: np.ndarray, degree: int):
@@ -520,7 +588,8 @@ class LinearRegression(analysis.Analysis):
         return operand, label_comp
 
     def regression(self, ind_vars_: List[str] | np.ndarray, dep_var_: str | np.ndarray,
-                   regress_type: RegressTypes = RegressTypes.linear, degree: int = 1, plot_on: bool = False):
+                   regress_type: RegressTypes = RegressTypes.linear, degree: int = 1, plot_on: bool = False,
+                   no_size: bool = False, alt_out = False):
         '''
         Perform a regression of type `regress_type` on the independent variables `ind_vars` and dependent variable `dep_var`.
 
@@ -568,22 +637,17 @@ class LinearRegression(analysis.Analysis):
             self.dep_var = dep_var
             self.y = y
             self.A = A
-            opp, label = self.linear_regression(ind_vars, dep_var)
-            slope = self.slope
-            intercept = self.intercept
-            predicts = self.predict()
-            residuals = self.residuals
-            R2 = self.R2
+            opp, label = LinearRegression.linear_regression_2(A, y)
         elif regress_type == 'polynomial':
-            opp, label = self.multi_poly_regression(A, y, degree)
+            opp, label = LinearRegression.multi_poly_regression(A, y, degree)
         elif regress_type == 'exponential':
             if ind_count > 1:
                 raise ValueError("Exponential regression only supports one independent variable")
-            opp, label = self.exponential_regression(A, y, degree)
+            opp, label = LinearRegression.exponential_regression(A, y, degree)
         elif regress_type == 'sinusoidal':
             if ind_count > 1:
                 raise ValueError("Sinusoidal regression only supports one independent variable")
-            opp, label = self.sinusoidal_regression(A, y, degree)
+            opp, label = LinearRegression.sinusoidal_regression(A, y, degree)
         elif regress_type == 'mixed':
             print("Mixed regression treats only first independent variable as exponential and the rest as polynomial")
             raise ValueError("Mixed regression not yet implemented. Please use a different regression type.")
@@ -602,9 +666,16 @@ class LinearRegression(analysis.Analysis):
         sst = smd * sample_size
         ssr = sst - sse
         R2 = 1 - (sse / sst)
+        out = None
         if plot_on:
             if ind_count == 1:
-                self.scatter(A[:, 0], y, f"{ind_vars[0]} by {dep_var} with {regress_type} Regression (R^2 = {R2:.2f})", operand=opp, reg_label=label, residuals_on=True)
+                args = [A[:, 0], y, f"{ind_vars[0]} by {dep_var} with {regress_type} Regression (R^2 = {R2:.2f})"]
+                kwargs = {"operand": opp, "reg_label": label, "residuals_on": True, "fig_sz": None}
+                if alt_out:
+                    out = [args, kwargs]
+                else:
+                    out = self.scatter(*args, **kwargs)
+        return opp, label, out
 
 
 
