@@ -4,9 +4,9 @@ YOUR NAME HERE
 CS 251/2: Data Analysis and Visualization
 Spring 2024
 """
-import numpy as np
-from data import *
 import matplotlib.pyplot as plt
+
+from data import *
 
 
 def show():
@@ -38,7 +38,7 @@ class Analysis:
             raise ValueError("Arrays must be 1D")
         if np.array_equal(a, b):
             return 0
-        return np.sum(np.abs(b-a), axis=0)
+        return np.sum(np.abs(b - a), axis=0)
 
     @staticmethod
     def l2_norm(a: np.ndarray, b: np.ndarray):
@@ -48,7 +48,7 @@ class Analysis:
             raise ValueError("Arrays must be 1D")
         if np.array_equal(a, b):
             return 0
-        c = b-a
+        c = b - a
         return np.sqrt(np.einsum('i,i->', c, c))
 
     @staticmethod
@@ -60,8 +60,8 @@ class Analysis:
         if np.array_equal(a, b):
             return 0
         pfloat = float(p)
-        inv_p = float(float(1)/pfloat)
-        return np.float_power(np.sum(np.abs(b-a)**pfloat, axis=0), inv_p)
+        inv_p = float(float(1) / pfloat)
+        return np.float_power(np.sum(np.abs(b - a) ** pfloat, axis=0), inv_p)
 
     @staticmethod
     def l_inf_norm(a: np.ndarray, b: np.ndarray):
@@ -71,7 +71,7 @@ class Analysis:
             raise ValueError("Arrays must be 1D")
         if np.array_equal(a, b):
             return 0
-        return np.max(np.abs(b-a), axis=0)
+        return np.max(np.abs(b - a), axis=0)
 
     def set_data(self, data):
         """Method that re-assigns the instance variable `data` with the parameter.
@@ -170,7 +170,7 @@ class Analysis:
         """
         data_selection = self.data.select_data(headers, rows)
         height = data_selection.shape[0]
-        return (1/height) * np.sum(data_selection, axis=0)
+        return (1 / height) * np.sum(data_selection, axis=0)
 
     def var(self, headers, rows=None):
         """Computes the variance for each variable in `headers` in the data object.
@@ -195,8 +195,7 @@ class Analysis:
         data_selection = self.data.select_data(headers, rows)
         height = data_selection.shape[0]
         means = self.mean(headers, rows)
-        return (1/(height-1)) * np.sum((data_selection - means)**2, axis=0)
-
+        return (1 / (height - 1)) * np.sum((data_selection - means) ** 2, axis=0)
 
     def std(self, headers, rows=None):
         """Computes the standard deviation for each variable in `headers` in the data object.
@@ -220,7 +219,8 @@ class Analysis:
         """
         return np.sqrt(self.var(headers, rows))
 
-    def show(self):
+    @staticmethod
+    def show():
         """Simple wrapper function for matplotlib's show function.
 
         (Does not require modification)
@@ -298,7 +298,7 @@ class Analysis:
                 dep_data = self.data.select_data([dep])
                 place = ax[row, col]
                 place.scatter(ind_data, dep_data)
-                if row == size-1:
+                if row == size - 1:
                     place.set_xlabel(ind)
                 if col == 0:
                     place.set_ylabel(dep)
@@ -342,7 +342,6 @@ class Analysis:
             row = data_selection[0]
             tiler = np.tile(row, (data_selection.shape[0], 1))
             tensors = []
-            ein_string = None
             if norm == 1:
                 ein_string = 'ijk->jk'
                 tensor1 = np.array([tiler, -data_selection])
@@ -369,7 +368,8 @@ class Analysis:
             rows.append(prod_vec.tolist())
 
         np.set_printoptions(formatter={'float': '{:.2f}'.format})
-        matrix = np.einsum('ijk,ikj->jk', np.array([np.ones((len(rows), len(rows))), rows]), np.array([rows, np.ones((len(rows), len(rows)))]))
+        matrix = np.einsum('ijk,ikj->jk', np.array([np.ones((len(rows), len(rows))), rows]),
+                           np.array([rows, np.ones((len(rows), len(rows)))]))
         return np.sqrt(np.max(matrix, axis=0)) if norm == 2 else np.max(matrix, axis=0)
 
     def l_centrality_alt(self, headers, rows=None, metric=l_inf_norm):
@@ -433,10 +433,7 @@ class Analysis:
         return data_selection[np.argmax(centralities)], maximum
 
 
-
-
-
-if __name__ == "__main__" :
+if __name__ == "__main__":
     # Set the data for analysis
     filename = 'data/vertices.csv'
     vert_data = Data(filename)
