@@ -1,0 +1,233 @@
+Counts: [[32779 59344   870    12   258]
+ [24870 21959  1059     6   238]
+ [ 2355  2371  5391     2   137]
+ [ 3185 37214    71     6    54]
+ [  861   374   217     1    29]
+ [    6     0    11     0    10]
+ [  684   542    55     0     4]
+ [  103    70   507     0    31]
+ [  260  1639     3     0     0]
+ [    0    12     0     0     0]]
+Levels1: ['Adoption' 'Transfer' 'Euthanasia' 'Return to Owner' 'Died' 'Relocate'
+ 'Missing' 'Disposal' 'Rto-Adopt' 'Stolen']
+Levels2: ['Cat' 'Dog' 'Other' 'Livestock' 'Bird']
+value_set: [   12   258   870 32779 59344]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Cat' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0. 1. 2. 3. 4.]
+value_set: [    6   238  1059 21959 24870]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Dog' 'Cat']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.16 1.16 2.16 3.16 4.16]
+value_set: [   2  137 2355 2371 5391]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Cat' 'Dog' 'Other']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.32 1.32 2.32 3.32 4.32]
+value_set: [    6    54    71  3185 37214]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Cat' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.48 1.48 2.48 3.48 4.48]
+value_set: [  1  29 217 374 861]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Dog' 'Cat']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.64 1.64 2.64 3.64 4.64]
+value_set: [ 0  0  6 10 11]
+value_set: (5,)
+label_set: ['Dog' 'Livestock' 'Cat' 'Bird' 'Other']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.8 1.8 2.8 3.8 4.8]
+value_set: [  0   4  55 542 684]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Dog' 'Cat']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.96 1.96 2.96 3.96 4.96]
+value_set: [  0  31  70 103 507]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Dog' 'Cat' 'Other']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [1.12 2.12 3.12 4.12 5.12]
+value_set: [   0    0    3  260 1639]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Cat' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [1.28 2.28 3.28 4.28 5.28]
+value_set: [ 0  0  0  0 12]
+value_set: (5,)
+label_set: ['Cat' 'Other' 'Livestock' 'Bird' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [1.44 2.44 3.44 4.44 5.44]
+value_set: [   12   258   870 32779 59344]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Cat' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0. 1. 2. 3. 4.]
+value_set: [    6   238  1059 21959 24870]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Dog' 'Cat']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.16 1.16 2.16 3.16 4.16]
+value_set: [   2  137 2355 2371 5391]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Cat' 'Dog' 'Other']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.32 1.32 2.32 3.32 4.32]
+value_set: [    6    54    71  3185 37214]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Cat' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.48 1.48 2.48 3.48 4.48]
+value_set: [  1  29 217 374 861]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Dog' 'Cat']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.64 1.64 2.64 3.64 4.64]
+value_set: [ 0  0  6 10 11]
+value_set: (5,)
+label_set: ['Dog' 'Livestock' 'Cat' 'Bird' 'Other']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.8 1.8 2.8 3.8 4.8]
+value_set: [  0   4  55 542 684]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Dog' 'Cat']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [0.96 1.96 2.96 3.96 4.96]
+value_set: [  0  31  70 103 507]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Dog' 'Cat' 'Other']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [1.12 2.12 3.12 4.12 5.12]
+value_set: [   0    0    3  260 1639]
+value_set: (5,)
+label_set: ['Livestock' 'Bird' 'Other' 'Cat' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [1.28 2.28 3.28 4.28 5.28]
+value_set: [ 0  0  0  0 12]
+value_set: (5,)
+label_set: ['Cat' 'Other' 'Livestock' 'Bird' 'Dog']
+label_set: (5,)
+values.shape: (10, 5)
+num_bars: 5
+ys: [1.44 2.44 3.44 4.44 5.44]
+value_set: [    0     0     6   103   260   861  2355  3185 24870 32779]
+value_set: (10,)
+label_set: ['Missing' 'Stolen' 'Relocate' 'Disposal' 'Rto-Adopt' 'Died' 'Euthanasia'
+ 'Return to Owner' 'Transfer' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+value_set: [    0     0    12    70   374  1639  2371 21959 37214 59344]
+value_set: (10,)
+label_set: ['Relocate' 'Missing' 'Stolen' 'Disposal' 'Died' 'Rto-Adopt' 'Euthanasia'
+ 'Transfer' 'Return to Owner' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.08 1.08 2.08 3.08 4.08 5.08 6.08 7.08 8.08 9.08]
+value_set: [   0    0    3   11   71  217  507  870 1059 5391]
+value_set: (10,)
+label_set: ['Missing' 'Stolen' 'Rto-Adopt' 'Relocate' 'Return to Owner' 'Died'
+ 'Disposal' 'Adoption' 'Transfer' 'Euthanasia']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.16 1.16 2.16 3.16 4.16 5.16 6.16 7.16 8.16 9.16]
+value_set: [ 0  0  0  0  0  1  2  6  6 12]
+value_set: (10,)
+label_set: ['Relocate' 'Missing' 'Disposal' 'Rto-Adopt' 'Stolen' 'Died' 'Euthanasia'
+ 'Transfer' 'Return to Owner' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.24 1.24 2.24 3.24 4.24 5.24 6.24 7.24 8.24 9.24]
+value_set: [  0   0   0  10  29  31  54 137 238 258]
+value_set: (10,)
+label_set: ['Missing' 'Rto-Adopt' 'Stolen' 'Relocate' 'Died' 'Disposal'
+ 'Return to Owner' 'Euthanasia' 'Transfer' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.32 1.32 2.32 3.32 4.32 5.32 6.32 7.32 8.32 9.32]
+value_set: [    0     0     6   103   260   861  2355  3185 24870 32779]
+value_set: (10,)
+label_set: ['Missing' 'Stolen' 'Relocate' 'Disposal' 'Rto-Adopt' 'Died' 'Euthanasia'
+ 'Return to Owner' 'Transfer' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0. 1. 2. 3. 4. 5. 6. 7. 8. 9.]
+value_set: [    0     0    12    70   374  1639  2371 21959 37214 59344]
+value_set: (10,)
+label_set: ['Relocate' 'Missing' 'Stolen' 'Disposal' 'Died' 'Rto-Adopt' 'Euthanasia'
+ 'Transfer' 'Return to Owner' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.08 1.08 2.08 3.08 4.08 5.08 6.08 7.08 8.08 9.08]
+value_set: [   0    0    3   11   71  217  507  870 1059 5391]
+value_set: (10,)
+label_set: ['Missing' 'Stolen' 'Rto-Adopt' 'Relocate' 'Return to Owner' 'Died'
+ 'Disposal' 'Adoption' 'Transfer' 'Euthanasia']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.16 1.16 2.16 3.16 4.16 5.16 6.16 7.16 8.16 9.16]
+value_set: [ 0  0  0  0  0  1  2  6  6 12]
+value_set: (10,)
+label_set: ['Relocate' 'Missing' 'Disposal' 'Rto-Adopt' 'Stolen' 'Died' 'Euthanasia'
+ 'Transfer' 'Return to Owner' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.24 1.24 2.24 3.24 4.24 5.24 6.24 7.24 8.24 9.24]
+value_set: [  0   0   0  10  29  31  54 137 238 258]
+value_set: (10,)
+label_set: ['Missing' 'Rto-Adopt' 'Stolen' 'Relocate' 'Died' 'Disposal'
+ 'Return to Owner' 'Euthanasia' 'Transfer' 'Adoption']
+label_set: (10,)
+values.shape: (5, 10)
+num_bars: 10
+ys: [0.32 1.32 2.32 3.32 4.32 5.32 6.32 7.32 8.32 9.32]
