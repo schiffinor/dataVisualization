@@ -1,16 +1,18 @@
-'''scatter3d.py
+"""scatter3d.py
 3D scatterplot to help visualize 3D numeric data
 Oliver W. Layton
 CS 251: Data Analysis and Visualization
 Fall 2023
-'''
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 
 
-def scatter3dplot(data_xyz, color=None, headers=['x', 'y', 'z'], title='Mystery dataset', lims=(0, 1)):
-    '''Creates a 3D scatter plot to visualize data'''
+def scatter3dplot(data_xyz, color=None, headers=None, title='Mystery dataset', lims=(0, 1)):
+    """Creates a 3D scatter plot to visualize data"""
+    if headers is None:
+        headers = ['x', 'y', 'z']
     fig = plt.figure()
     ax = plt.axes(projection='3d')
 

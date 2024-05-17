@@ -28,11 +28,11 @@ class LinearRegression(analysis.Analysis):
     Perform and store linear regression and related analyses
     """
 
-    def __init__(self, data):
+    def __init__(self, data_):
         """
-        :param data: Data object. Contains all data samples and variables in a dataset.
+        :param data_: Data object. Contains all data samples and variables in a dataset.
         """
-        super().__init__(data)
+        super().__init__(data_)
 
         # ind_vars: Python list of strings.
         #   1+ Independent variables (predictors) entered in the regression.
@@ -72,7 +72,7 @@ class LinearRegression(analysis.Analysis):
         Performs a linear regression on the independent (predictor) variable(s) `ind_vars`
         and dependent variable `dep_var.
 
-        :returns: tuple: (self.lin_opp, label_comp)
+
         self.lin_opp : LeftOperand
             The linear regression model as a LeftOperand object.
         label_comp : str
@@ -492,7 +492,12 @@ class LinearRegression(analysis.Analysis):
             This is useful to change if your pair plot looks enormous or tiny in your notebook!
         :param hists_on_diag: bool
             If true, draw a histogram of the variable along main diagonal of pairplot.
-
+        :param reg_type: RegressTypes
+            Regression Type to Run
+        :param degree: int
+            Degree for regression, only relevant for some types
+        :param title: string
+            Title for the plot.
         """
         size = len(data_vars)
         figure = plt.figure(figsize=fig_sz, layout="compressed")

@@ -5,8 +5,6 @@ CS 251/2: Data Analysis and Visualization
 Spring 2024
 """
 import matplotlib.pyplot as plt
-import numpy as np
-import math
 
 from dataClass import *
 

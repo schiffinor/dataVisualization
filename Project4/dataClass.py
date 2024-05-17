@@ -96,10 +96,10 @@ class Data:
             # print(f"Data Types: {self.data[0][0].dtype}")
             self.headers = list(dFrame.columns)
             dataTypes = list(dFrame.dtypes)
-            self.var_data_type = [(self.dTRef.numeric if dType == np.float64 else
+            self.var_data_type = [(self.dTRef.numeric if np.issubdtype(dType, np.inexact) else
                                    (self.dTRef.date if dType == np.datetime64 else
-                                    (self.dTRef.categorical if dType == np.int_ else
-                                     (self.dTRef.string if dType == np.string_ else
+                                    (self.dTRef.categorical if np.issubdtype(dType, np.integer) else
+                                     (self.dTRef.string if (dType.type is np.string_ or dType.type is np.str_) else
                                       self.dTRef.missing)))) for dType in dataTypes]
             self.header2col = dict(zip(self.headers, range(len(self.headers))))
             self.col2header = dict(zip(range(len(self.headers)), self.headers))
@@ -513,7 +513,7 @@ class Data:
             out_list.append("\n")
             if ind == row_stop and row_stop != 0:
                 out_list.append("│")
-                ind_d = row_count-1
+                ind_d = row_count - 1
                 row_d = rows[ind_d]
                 for index, entry in enumerate(row_d):
                     # Determine data type for each entry using local reference list.
