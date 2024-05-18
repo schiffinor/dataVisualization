@@ -506,7 +506,6 @@ class PCA:
 
         (Week 2)
 
-        TODO:
         - Plot a line joining the origin (0, 0) and corresponding components of the top 2 PC eigenvectors.
             Example: If e_0 = [0.1, 0.3] and e_1 = [1.0, 2.0], you would create two lines to join
             (0, 0) and (0.1, 1.0); (0, 0) and (0.3, 2.0).

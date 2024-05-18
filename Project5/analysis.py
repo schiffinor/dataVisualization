@@ -58,7 +58,7 @@ class Analysis:
             raise ValueError("Arrays must have the same shape")
         if np.array_equal(a, b):
             return 0
-        return np.sum(np.abs(b - a), axis=0)
+        return np.einsum("...i->...", np.abs(b - a))
 
     @staticmethod
     def l2_norm(a: np.ndarray, b: np.ndarray):
@@ -388,7 +388,6 @@ class Analysis:
         axes. ndarray of AxesSubplot objects. shape=(len(data_vars), len(data_vars))
             2nd item returned by plt.subplots
 
-        TODO:
         1. Make the len(data_vars) x len(data_vars) grid of scatterplots
         2. The y axis of the FIRST column should be labeled with the appropriate variable being plotted there.
         The x axis of the LAST row should be labeled with the appropriate variable being plotted there.
@@ -545,6 +544,7 @@ class Analysis:
         return data_selection[np.argmax(centralities)], maximum
 
 
+
 if __name__ == "__main__":
     # Set the data for analysis
 
@@ -565,6 +565,8 @@ if __name__ == "__main__":
     """
     val = Analysis.lp_norm(np.array([1, 2, 3]), np.array([2, 3, 4]), 3)
     print(f"Val: {val}")
+
+
 
     # centrality_alt = analysis.l_centrality_alt(["pos_x", "pos_y", "pos_z"], rows=rowSet, metric=Analysis.l2_norm)
     # print(centrality_alt)

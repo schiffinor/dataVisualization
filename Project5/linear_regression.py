@@ -1037,8 +1037,7 @@ class LinearRegression(analysis.Analysis):
             Intercept for the linear regression fit
         p: int. Degree of polynomial regression model.
 
-        TODO:
-        - Use parameters and call methods to set all instance variables defined in constructor. 
+        - Use parameters and call methods to set all instance variables defined in constructor.
         """
         self.ind_vars = ind_vars
         self.dep_var = dep_var
