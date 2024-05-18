@@ -302,7 +302,8 @@ class KMeans:
             raise ValueError('centroids and pts must have the same number of features')
         KMeans.norm_validation(norm, normP)
 
-        pts_arr = np.vstack([np.vstack([pts[i] for j in range(centroids.shape[0])]) for i in range(pts.shape[0])])
+        pts_arr_list = [pts[i] for i in range(pts.shape[0]) for _ in range(centroids.shape[0])]
+        pts_arr = np.vstack(pts_arr_list)
         centroids_arr = np.vstack([centroids for i in range(pts.shape[0])])
         return KMeans.ndim_norm_choice_and_call(pts_arr, centroids_arr, norm, normP).reshape(pts.shape[0],
                                                                                              centroids.shape[0])
@@ -436,18 +437,17 @@ class KMeans:
         KMeans.norm_validation(norm, normP)
 
         centroids, k = KMeans.initialize_static(data_, k)
-        data_centroid_labels = KMeans.update_labels_static(data_, centroids)
-        out_vals = None
+        iter_count = 0
+        data_centroid_labels = None
         for i in range(max_iter):
-            centroids, centroid_diff = KMeans.update_centroids_static(data_, k, data_centroid_labels, centroids)
             data_centroid_labels = KMeans.update_labels_static(data_, centroids)
-            inertia = KMeans.compute_inertia_static(data_, centroids, data_centroid_labels)
-            out_vals = i, inertia, centroids, data_centroid_labels
+            centroids, centroid_diff = KMeans.update_centroids_static(data_, k, data_centroid_labels, centroids)
             if np.all(np.abs(centroid_diff) < tol):
                 break
-        return out_vals
+        inertia = KMeans.compute_inertia_static(data_, centroids, data_centroid_labels)
+        return iter_count, inertia, centroids, data_centroid_labels
 
-    def cluster(self, k: int = 2, tol: float = 1e-8, max_iter: int = 1000,
+    def cluster(self, k: int = 2, tol: float = 1e-4, max_iter: int = 1000,
                 verbose: bool = False, norm: staticmethod = analysis.Analysis.l2_norm,
                 normP: int = 2) -> Tuple[int, float, np.ndarray, np.ndarray]:
         """
@@ -661,7 +661,7 @@ class KMeans:
         if prev_centroids.shape[0] != k:
             raise ValueError('prev_centroids must have k rows')
 
-        new_centroids = np.zeros_like(prev_centroids)
+        new_centroids = np.ndarray(shape=(k, data_.shape[1]))
         for i in range(k):
             temp_arr = np.where(data_centroid_labels == i, True, False)
             if not np.any(temp_arr):
@@ -916,17 +916,123 @@ class KMeans:
         """
         return KMeans.elbow_plot_static(self.data, max_k, n_iter=n_iter)
 
-
-    def replace_color_with_centroid(self):
+    @staticmethod
+    def replace_color_with_centroid_static(data_: np.ndarray, centroids: np.ndarray, data_labels: np.ndarray) -> np.ndarray:
         """Replace each RGB pixel in self.data (flattened image) with the closest centroid value.
         Used with image compression after K-means is run on the image vector.
 
-        Parameters:
-        -----------
-        None
-
+        :param data_: ndarray. shape=(num_samps, num_features).
+            The dataset to be clustered
+        :param centroids: ndarray. shape=(k, self.num_features).
+            Centroids for each cluster
+        :param data_labels: ndarray of ints. shape=(self.num_samps,)
+            Holds index of the assigned cluster of each data sample
         Returns:
         -----------
         None
         """
-        pass
+        if data_ is None:
+            raise ValueError('data_ cannot be None')
+        if data_.ndim != 2:
+            raise ValueError('data_ must be a 2D numpy array')
+        if data_.shape[1] != 3:
+            raise ValueError('data_ must have 3 features')
+        if centroids is None:
+            raise ValueError('centroids cannot be None')
+        if centroids.ndim != 2:
+            raise ValueError('centroids must be a 2D numpy array')
+        if centroids.shape[1] != 3:
+            raise ValueError('centroids must have 3 features')
+        data_copy = data_.copy()
+        for i in range(data_.shape[0]):
+            label = data_labels[i]
+            data_copy[i] = centroids[label]
+        return data_copy
+
+    def replace_color_with_centroid(self):
+        """Replace each RGB pixel in self.data (flattened image) with the closest centroid value.
+        Used with image compression after K-means is run on the image vector.
+        """
+        self.set_data(KMeans.replace_color_with_centroid_static(self.data, self.centroids, self.data_centroid_labels))
+
+
+if __name__ == '__main__':
+    """# Load the data
+    data = np.load('data/cluster_data.npy')
+    # Create a KMeans object
+    kmeans = KMeans(data)
+    # Run KMeans clustering
+    kmeans.cluster(k=3, verbose=True)
+    # Plot the clusters
+    kmeans.plot_clusters()
+    # Make an elbow plot
+    kmeans.elbow_plot(10)
+    # Replace the colors with the centroids
+    kmeans.replace_color_with_centroid()
+    # Plot the compressed image
+    plt.imshow(kmeans.data.reshape(100, 100, 3))
+    plt.show()"""
+
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+
+    plt.style.use(['seaborn-v0_8-colorblind', 'seaborn-v0_8-darkgrid'])
+    plt.rcParams.update({'font.size': 20})
+
+    np.set_printoptions(suppress=True, precision=5)
+
+
+    from matplotlib.image import imread
+
+    # %%
+    # Load in baby bird image
+    bird = imread('data/baby_bird.jpg')
+    # Display image
+    plt.imshow(bird)
+    plt.grid(False)
+    plt.axis('off')
+    plt.show()
+
+    def flatten(img):
+        """
+        Flattens `img` to N 1D vectors.
+        For example, for an RGB image, `(num_rows, num_cols, rgb)` -> `(num_rows*num_cols, rgb)`.
+
+        Parameters:
+        -----------
+        img: ndarray. shape=(num_rows, num_cols, rgb)
+
+        Returns:
+        -----------
+        Flattened `img`. ndarray. shape=(num_rows*num_cols, rgb)
+        """
+        return img.reshape(-1, img.shape[-1])
+
+
+
+    # Flatten image
+    bird_data = flatten(bird)
+    print(bird_data.shape)
+    # (61206, 3)
+
+    # Run K-means on bird data
+    k = 4
+    bird_kmeans = KMeans(bird_data)
+    bird_kmeans.cluster(k, 1)
+    # %%
+    # Compress image
+    bird_kmeans.replace_color_with_centroid()
+    # %% md
+
+    # Reshape compressed image
+    print(f"Original shape: {bird.shape}")
+    print(f"Compressed shape: {bird_kmeans.get_data().shape}")
+    bird_compressed = bird_kmeans.get_data().reshape(202, 303, 3)
+    print(f"Compressed shape: {bird_compressed.shape}")
+    # Display compressed image
+    plt.imshow(bird_compressed)
+    plt.grid(False)
+    plt.axis('off')
+    plt.show()
+
