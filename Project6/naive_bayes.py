@@ -60,8 +60,8 @@ class NaiveBayes(Classifier):
             word_count = np.sum(data_class, axis=0)
             liklihood[c] = (word_count + 1) / (total_word_count + num_features)
 
-        self.priors = priors
-        self.likelihoods = liklihood
+        self.priors = np.log(priors)
+        self.likelihoods = np.log(liklihood)
 
 
     def predict(self, data):

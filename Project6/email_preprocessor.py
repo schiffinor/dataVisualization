@@ -65,6 +65,7 @@ def count_words(email_path='data/enron'):
                     else:
                         word_freq[word] = 1
                 num_emails += 1
+    return word_freq, num_emails
 
 
 def find_top_words(word_freq, num_features=200):
