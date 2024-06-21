@@ -242,6 +242,39 @@ class Analysis:
             return np.zeros(a.shape[:-1])
         return np.max(np.abs(b - a), axis=-1)
 
+
+    @staticmethod
+    def l0_norm(a: np.ndarray, b: np.ndarray) -> float:
+        if a.shape != b.shape and a.shape != b.T.shape:
+            raise ValueError("Arrays must have the same shape")
+        if a.ndim != 1:
+            raise ValueError("Arrays must be 1D")
+        if np.array_equal(a, b):
+            return 0
+        return float(np.sum(np.abs(b - a) > 0, axis=0))
+
+
+    @staticmethod
+    def l0_norm_ndim(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        """
+        This takes in two arrays and returns the L0 norm of the difference between the two arrays.
+        Since L0 norm is a vector norm it will return an n-1 dimensional array where n is the number of dimensions
+        of the input arrays. The last dimension will be reduced to a scalar value.
+        That is for a 3D array of shape (3, 2, 4) the output will be of shape (3, 2).
+        :param a: ndarray.
+            Input array 1
+        :param b: ndarray.
+            Input array 2
+        :return: ndarray.
+            L0 norm of the difference between the two arrays.
+        """
+        if a.shape != b.shape and a.shape != b.T.shape:
+            raise ValueError("Arrays must have the same shape")
+        if np.array_equal(a, b):
+            return np.zeros(a.shape[:-1])
+        return np.sum(np.abs(b - a) > 0, axis = -1)
+
+
     def set_data(self, data):
         """Method that re-assigns the instance variable `data` with the parameter.
         Convenience method to change the data used in an analysis without having to create a new Analysis object.

@@ -81,7 +81,7 @@ class Classifier:
             return np.array([])
         if len(y) != len(y_pred):
             raise ValueError("y and y_pred must have the same length")
-        return np.array([[np.sum((y == i) and (y_pred == j)) for j in range(self.num_classes)] for i in range(self.num_classes)])
+        return np.array([[np.sum((y == i) & (y_pred == j)) for j in range(self.num_classes)] for i in range(self.num_classes)])
 
 
     def train(self, data: np.ndarray | ArrayLike, y: np.ndarray | ArrayLike):

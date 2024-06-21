@@ -276,7 +276,10 @@ class KNN(Classifier):
             raise ValueError("exemplars and classes must have the same length")
 
         # Compute the distance from each test sample to all the training exemplars.
-        dists = d_pts_to_pts(data, exemplars, norm, normP)
+        if data.shape[0] * exemplars.shape[0] * data.shape[1] < 1e7:
+            dists = d_pts_to_pts(data, exemplars, norm, normP)
+        else:
+            dists = np.array([d_pt_to_pts(data[i], exemplars, norm, normP) for i in range(data.shape[0])])
         classes = classes.astype(int)[:, np.newaxis].T
         class_arr = np.broadcast_to(classes, (dists.shape[0], classes.shape[1]))
         k_nearest_sort = dists.argsort(axis=1)
