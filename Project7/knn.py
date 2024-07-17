@@ -353,6 +353,9 @@ class KNN(Classifier):
         Paints the data space in colors corresponding to which class the classifier would
          hypothetically assign to data samples appearing in each region.
 
+        :param norm:
+        :param normP:
+        :param norm:
         :param data: np.ndarray. shape=(num_train_samps, num_features). Data to learn / train on.
         :param y: np.ndarray. shape=(num_train_samps,). Corresponding class of each data sample.
         :param k: int. Determines the neighborhood size of training points around each test sample used to

@@ -8,8 +8,11 @@ import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
-
+import scipy.spatial.distance as spd
+import numpyProj as npP
 from dataClass import *
+
+
 
 
 def show():
@@ -18,6 +21,11 @@ def show():
     (Does not require modification)
     """
     plt.show()
+
+
+def arrayPrepper(a, b, test=False):
+    # np.abs(a[:, None, :] - b[None, :, :])
+    return npP.compute_abs_difference(a, b)
 
 
 class Analysis:
@@ -31,7 +39,7 @@ class Analysis:
         self.data = data
 
         # Make plot font sizes legible
-        plt.rcParams.update({'font.size': 18})
+        plt.rnparams.update({'font.size': 18})
 
     @staticmethod
     def l1_norm(a: np.ndarray, b: np.ndarray) -> float:
@@ -71,7 +79,7 @@ class Analysis:
             raise ValueError("Arrays must be 1D")
         if np.array_equal(a, b):
             return 0
-        c = b - a
+        c = np.abs(b - a)
         return np.sqrt(np.einsum('i,i->', c, c))
 
     @staticmethod
@@ -92,7 +100,7 @@ class Analysis:
             raise ValueError("Arrays must have the same shape")
         if np.array_equal(a, b):
             return np.zeros(a.shape[:-1])
-        c = b - a
+        c = np.abs(b - a)
         return np.sqrt(np.einsum('...i,...i->...', c, c))
 
     @staticmethod
@@ -110,7 +118,7 @@ class Analysis:
         if p == np.inf:
             return Analysis.l_inf_norm(a, b)
         if p < 1:
-            return Analysis.lp_norm_alt(a, b, p) # This is the only place where the alternative method is called
+            return Analysis.lp_norm_alt(a, b, p)  # This is the only place where the alternative method is called
         p = int(p)
         if p < 0:
             raise ValueError("p must be greater than 0")
@@ -118,10 +126,10 @@ class Analysis:
             raise ValueError("p must be an integer")
         pfloat = float(p)
         inv_p = float(float(1) / pfloat)
-        ein_string = "i,"+",".join(["i" for _ in range(p-1)])+"->"
-        diff_copies = [np.abs(b - a) for _ in range(p)]
+        ein_string = "i," + ",".join(["i" for _ in range(p - 1)]) + "->"
+        c = np.abs(b - a)
+        diff_copies = [c for _ in range(p)]
         return np.float_power(np.einsum(ein_string, *diff_copies), inv_p)
-
 
     @staticmethod
     def lp_norm_ndim(a: np.ndarray, b: np.ndarray, p: float = 2) -> np.ndarray:
@@ -150,7 +158,7 @@ class Analysis:
         if p == np.inf:
             return Analysis.l_inf_norm_ndim(a, b)
         if p < 1:
-            return Analysis.lp_norm_alt_ndim(a, b, p) # This is the only place where the alternative method is called
+            return Analysis.lp_norm_alt_ndim(a, b, p)  # This is the only place where the alternative method is called
         p = int(p)
         if p < 0:
             raise ValueError("p must be greater than 0")
@@ -159,9 +167,9 @@ class Analysis:
         pfloat = float(p)
         inv_p = float(float(1) / pfloat)
         ein_string = "...i," + ",".join(["...i" for _ in range(p - 1)]) + "->..."
-        diff_copies = [np.abs(b - a) for _ in range(p)]
+        c = np.abs(b - a)
+        diff_copies = [c for _ in range(p)]
         return np.float_power(np.einsum(ein_string, *diff_copies), inv_p)
-
 
     @staticmethod
     def lp_norm_alt(a: np.ndarray, b: np.ndarray, p: float = 2) -> float:
@@ -184,7 +192,6 @@ class Analysis:
         if p > 1:
             return Analysis.lp_norm_alt(b, a, 1 / p)
         return np.float_power(np.sum(np.abs(b - a) ** p), 1 / p)
-
 
     @staticmethod
     def lp_norm_alt_ndim(a: np.ndarray, b: np.ndarray, p: float = 2) -> np.ndarray:
@@ -212,6 +219,77 @@ class Analysis:
 
 
     @staticmethod
+    def lp_norm_v2_pList(a: np.ndarray, b: np.ndarray, p: int | float = 2, debug: bool = True) -> np.ndarray:
+        """
+        This takes in two arrays and returns the Lp norm of the difference between the two arrays.
+        :param a: ndarray.
+            Input array 1
+        :param b: ndarray.
+            Input array 2
+        :param p: float.
+            The power of the norm.
+        :param debug: bool.
+            If True, print debug information and use custom slower methods.
+        :return: ndarray.
+            Lp norm of the difference between the two arrays.
+        """
+        if a.ndim != b.ndim:
+            raise ValueError("Arrays must have the same number of dimensions")
+        if a.ndim != 2:
+            raise ValueError("Arrays must be 2D point lists")
+        if a.shape[1] != b.shape[1] and a.shape[1] != b.T.shape[1]:
+            raise ValueError("Arrays must have the same shape")
+        if np.array_equal(a, b):
+            return np.zeros(a.shape[:-1])
+        if p < 0:
+            raise ValueError("p must be greater than 0")
+        if not isinstance(p, int) and not isinstance(p, float):
+            print(type(p))
+            raise ValueError("p must be a float or an integer")
+        pfloat = float(p)
+        inv_p = float(float(1) / pfloat)
+        med_array = arrayPrepper(a, b) if debug or p in {1, 2, 0, np.inf} or isinstance(p, int) or p.is_integer() else np.array([0])
+
+        if p == np.inf:
+            return spd.cdist(a, b, 'chebyshev') if not debug else np.max(med_array, axis=-1)
+        elif p == 1:
+            return spd.cdist(a, b, 'cityblock') if not debug else np.einsum("...i->...", med_array)
+        elif p == 2:
+            return spd.cdist(a, b, 'euclidean') if not debug else np.sqrt(np.einsum("...i,...i->...", med_array, med_array))
+        elif p == 0:
+            return spd.cdist(a, b, 'hamming') if not debug else np.einsum("...i->...", med_array > 0)
+        elif isinstance(p, int) or p.is_integer():
+            p = int(p)
+            if not debug:
+                if p == 1:
+                    return spd.cdist(a, b, 'cityblock')
+                if p == 2:
+                    return spd.cdist(a, b, 'euclidean')
+            ein_string = "...i," + ",".join(["...i" for _ in range(p - 1)]) + "->..."
+            diff_copies = [med_array for _ in range(p)]
+            if p == 2:
+                return np.sqrt(np.einsum(ein_string, *diff_copies))
+            return np.float_power(np.einsum(ein_string, *diff_copies), inv_p)
+        elif p.as_integer_ratio()[0] == 1 and p.as_integer_ratio()[1] > 1:
+            p_denom = p.as_integer_ratio()[1]
+            ein_string = "...i," + ",".join(["...i" for _ in range(p_denom - 1)]) + "->..."
+            post_med_array = np.float_power(med_array, p)
+            diff_copies = [post_med_array for _ in range(p_denom)]
+            return np.einsum(ein_string, *diff_copies)
+        elif pfloat.as_integer_ratio()[0] > 1 and pfloat.as_integer_ratio()[1] > 1:
+            p_num = pfloat.as_integer_ratio()[0]
+            p_denom = pfloat.as_integer_ratio()[1]
+            ein_string_denom = "...i," + ",".join(["...i" for _ in range(p_denom - 1)]) + "->...i"
+            ein_string_num = "...i," + ",".join(["...i" for _ in range(p_num - 1)]) + "->..."
+            med_array = np.float_power(med_array, 1.0 / float(p_denom))
+            diff_copy1 = [med_array for _ in range(p_num)]
+            post_med_array = np.einsum(ein_string_num, *diff_copy1)
+            diff_copies = [post_med_array for _ in range(p_denom)]
+            return np.float_power(np.einsum(ein_string_denom, *diff_copies), 1.0 / float(p_num))
+        return np.float_power(np.einsum("...i->...", np.float_power(med_array, pfloat)), inv_p)
+
+
+    @staticmethod
     def l_inf_norm(a: np.ndarray, b: np.ndarray) -> float:
         if a.shape != b.shape and a.shape != b.T.shape:
             raise ValueError("Arrays must have the same shape")
@@ -220,7 +298,6 @@ class Analysis:
         if np.array_equal(a, b):
             return 0
         return np.max(np.abs(b - a), axis=0)
-
 
     @staticmethod
     def l_inf_norm_ndim(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -242,7 +319,6 @@ class Analysis:
             return np.zeros(a.shape[:-1])
         return np.max(np.abs(b - a), axis=-1)
 
-
     @staticmethod
     def l0_norm(a: np.ndarray, b: np.ndarray) -> float:
         if a.shape != b.shape and a.shape != b.T.shape:
@@ -252,7 +328,6 @@ class Analysis:
         if np.array_equal(a, b):
             return 0
         return float(np.sum(np.abs(b - a) > 0, axis=0))
-
 
     @staticmethod
     def l0_norm_ndim(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -272,8 +347,7 @@ class Analysis:
             raise ValueError("Arrays must have the same shape")
         if np.array_equal(a, b):
             return np.zeros(a.shape[:-1])
-        return np.sum(np.abs(b - a) > 0, axis = -1)
-
+        return np.sum(np.abs(b - a) > 0, axis=-1)
 
     def set_data(self, data):
         """Method that re-assigns the instance variable `data` with the parameter.
@@ -634,7 +708,6 @@ class Analysis:
         return data_selection[np.argmax(centralities)], maximum
 
 
-
 if __name__ == "__main__":
     # Set the data for analysis
 
@@ -655,8 +728,6 @@ if __name__ == "__main__":
     """
     val = Analysis.lp_norm(np.array([1, 2, 3]), np.array([2, 3, 4]), 3)
     print(f"Val: {val}")
-
-
 
     # centrality_alt = analysis.l_centrality_alt(["pos_x", "pos_y", "pos_z"], rows=rowSet, metric=Analysis.l2_norm)
     # print(centrality_alt)

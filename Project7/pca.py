@@ -93,9 +93,7 @@ class PCA:
     def covariance_matrix(data_: np.ndarray):
         """Computes the covariance matrix of `data`
 
-        :param data: ndarray. shape=(num_samps, num_vars)
-            `data` is NOT centered coming in, you should do that here.
-
+        :param data_:
         :return ndarray. shape=(num_vars, num_vars)
             The covariance matrix of centered `data`
 
@@ -138,9 +136,6 @@ class PCA:
 
         Does NOT actually transform data by PCA.
 
-        :param vars: Python list of strings. len(vars) = num_selected_vars
-            1+ variable names selected to perform PCA on.
-            Variable names must match those used in the `self.data` DataFrame.
         normalize_dataset: boolean.
             If True, min-max normalize each data variable it ranges from 0 to 1.
 
@@ -153,6 +148,9 @@ class PCA:
         - Make sure to compute everything needed to set all instance variables defined in constructor,
         except for self.A_proj (this will happen later).
         - Remember, this method does NOT actually transform the dataset by PCA.
+        :param data_:
+        :param vars_:
+        :param normalize_dataset:
         """
         if isinstance(vars_, np.ndarray):
             pcs_to_keep = vars_.tolist()
@@ -204,9 +202,6 @@ class PCA:
 
         Does NOT actually transform data by PCA.
 
-        :param vars: Python list of strings. len(vars) = num_selected_vars
-            1+ variable names selected to perform PCA on.
-            Variable names must match those used in the `self.data` DataFrame.
         normalize_dataset: boolean.
             If True, min-max normalize each data variable it ranges from 0 to 1.
 
@@ -219,6 +214,8 @@ class PCA:
         - Make sure to compute everything needed to set all instance variables defined in constructor,
         except for self.A_proj (this will happen later).
         - Remember, this method does NOT actually transform the dataset by PCA.
+        :param vars_:
+        :param normalize_dataset:
         """
         (self.vars, self.A, self.orig_means, self.orig_mins, self.orig_maxs, means, mins, maxs, cov_mat, self.e_vals,
          self.e_vecs, self.prop_var, self.cum_var, self.normalized) = PCA.fit_static(self.data, vars_,
@@ -231,6 +228,7 @@ class PCA:
         x axis corresponds to top PCs included (large-to-small order)
         y axis corresponds to proportion variance accounted for
 
+        :param cumVar:
         :param num_pcs_to_keep: int. Show the variance accounted for by this many top PCs.
             If num_pcs_to_keep is None, show variance accounted for by ALL the PCs (the default).
 
@@ -272,6 +270,8 @@ class PCA:
     def pca_project_static(A_: np.ndarray, eVecs: np.ndarray, pcs_to_keep: List[int]):
         """Project the data onto `pcs_to_keep` PCs (not necessarily contiguous)
 
+        :param A_:
+        :param pcs_to_keep:
         :param eVecs: ndarray. shape=(num_vars, num_pcs)
             Eigenvectors of the covariance matrix of the data.
         data: ndarray. shape=(num_samps, num_vars)
@@ -340,7 +340,6 @@ class PCA:
         """
         Project the data into PCA space (on `top_k` PCs) then project it back to the data space
 
-        :param data: ndarray. shape=(num_samps, num_vars). Data to project onto the PCs.
         eVecs: ndarray. shape=(num_vars, num_pcs). Eigenvectors of the covariance matrix of the data.
         pcList: Python list of ints. len(pcList) = num_pcs_to_keep
             Project the data onto these PCs.
@@ -349,6 +348,13 @@ class PCA:
             Example 1: [0, 2] would mean project on the 1st and 3rd largest PCs.
             Example 2: [0, 1] would mean project on the two largest PCs.
 
+        :param A_:
+        :param eVecs:
+        :param pcList:
+        :param normed:
+        :param oMeans:
+        :param oMins:
+        :param oMaxs:
         :return ndarray. shape=(num_samps, num_selected_vars). Data projected onto top K PCs then projected back to data space.
 
         NOTE: If you normalized, remember to rescale the data projected back to the original data space.
@@ -386,8 +392,7 @@ class PCA:
 
         (Week 2)
 
-        :param top_k: int. Project the data onto this many top PCs.
-
+        :param pcList:
         :return ndarray. shape=(num_samps, num_selected_vars). Data projected onto top K PCs then projected back to data space.
 
         NOTE: If you normalized, remember to rescale the data projected back to the original data space.

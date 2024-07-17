@@ -738,8 +738,6 @@ class KMeans:
             The dataset to be plotted.
         :param labels: ndarray of ints. shape=(num_samps,).
             Holds index of the assigned cluster of each data sample
-        :param centroids: ndarray. shape=(k, self.num_features).
-            Centroids for each cluster
         :param k: int.
             Number of clusters
         :param x_label: str.
@@ -833,7 +831,7 @@ class KMeans:
         (especially for those who are colorblind). To make sure you change your colors to be clearly differentiable,
         use either the Okabe & Ito or one of the Petroff color palettes:
         """
-        return KMeans.plot_clusters_static(self.data, self.data_centroid_labels, self.centroids, self.k, x_label, y_label, title)
+        return KMeans.plot_clusters_static(self.data, self.data_centroid_labels, self.centroids, self.k, x_label, y_label)
 
 
     @staticmethod
