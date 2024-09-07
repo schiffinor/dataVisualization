@@ -1,8 +1,10 @@
+import math
 import unittest
 import numpy as np
 from analysis import Analysis
 from scipy.spatial.distance import cdist
 import timeit
+
 """
 Im writing code that calculates distances between sets of points in a dataset. 
 I have a custom implementation of the Lp norm, that beats the default implementation in scipy.spatial.distance.cdist.
@@ -33,23 +35,27 @@ def compare_with_cdist(a, b, p_values=None):
     if p_values is None:
         p_values = [1, 2, 3, 4.5, np.inf]
     val_list = []
+    c_vals = []
     for p in p_values:
         val_list.append(test_performance(a, b, Analysis.lp_norm_v2_pList, p))
+        if p == np.inf:
+            c_vals.append(test_performance(a, b, lambda x, y: cdist(a, b, "chebyshev")))
+        elif p == 0:
+            c_vals.append(test_performance(a, b, lambda x, y: cdist(a, b, "hamming")))
+        elif p == 1:
+            c_vals.append(test_performance(a, b, lambda x, y: cdist(a, b, "cityblock")))
+        elif p == 2:
+            c_vals.append(test_performance(a, b, lambda x, y: cdist(a, b, "euclidean")))
+        else:
+            c_vals.append(test_performance(a, b, lambda x, y: cdist(a, b, "minkowski", p=p)))
 
-    # cdist comparisons
-    v1 = test_performance(a, b, lambda x, y: cdist(x, y, 'cityblock'))
-    v2 = test_performance(a, b, lambda x, y: cdist(x, y, 'euclidean'))
-    v3 = test_performance(a, b, lambda x, y: cdist(x, y, 'minkowski', p=3))
-    v4 = test_performance(a, b, lambda x, y: cdist(x, y, 'minkowski', p=4.5))
-    if np.inf in p_values:
-        v5 = test_performance(a, b, lambda x, y: cdist(x, y, 'chebyshev'))
     for i, pz in enumerate(p_values):
-        print(f"Custom L{pz} norm matches cdist: {np.allclose(val_list[i], [v1, v2, v3, v4, v5][i])}")
-        print(f"Maximum difference: {np.max(np.abs(val_list[i] - [v1, v2, v3, v4, v5][i]))}")
+        print(f"Custom L{pz} norm matches cdist: {np.allclose(val_list[i], c_vals[i])}")
+        print(f"Maximum difference: {np.max(np.abs(val_list[i] - c_vals[i]))}")
 
 
 # Generate a large random dataset
-a, b = generate_random_data(500, 300, 1000)  # Example: 1000 samples, 100 dimensions
+a, b = generate_random_data(500, 300, 100)  # Example: 1000 samples, 100 dimensions
 
 # Compare performance of custom norm functions against cdist
-compare_with_cdist(a, b)
+compare_with_cdist(a, b, [0, 1, 2, 3, 4.5, math.pi, np.inf])

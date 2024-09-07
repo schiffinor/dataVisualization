@@ -16,23 +16,41 @@ import scipy.linalg as sla
 import scipy.signal.windows as swa
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-import Operands
-import analysis
 from Operands import *
-from dataClass import Data
+from data import Data
 from regressTypes import RegressTypes
+from typing import Tuple, List, Union, Dict, NewType, Callable
 
+import analysis as an
+import warnings as wn
+import setNorm
 
-class LinearRegression(analysis.Analysis):
+# Define a type for a function that takes two np.ndarrays and returns a scalar
+Norm = NewType("Norm", Callable[[np.ndarray, np.ndarray, ...], float])
+
+Norm_ndim = NewType("Norm_ndim", Callable[[np.ndarray, np.ndarray, ...], np.ndarray])
+
+Norm_plist = NewType("Norm_plist", Callable[[np.ndarray, np.ndarray, ...], np.ndarray])
+
+class LinearRegression(an.Analysis):
     """
     Perform and store linear regression and related analyses
     """
 
-    def __init__(self, data_):
+    def __init__(self, data: np.ndarray,  norm: Norm = an.Analysis.l2_norm,
+                 normP: int | float = 2, norm_ndim: Norm_ndim = an.Analysis.l2_norm_ndim,
+                 norm_plist: Norm_plist = an.Analysis.lp_norm_v2_pList):
         """
-        :param data_: Data object. Contains all data samples and variables in a dataset.
+        :param data: Data object. Contains all data samples and variables in a dataset.
         """
-        super().__init__(data_)
+        super().__init__(data)
+        self.norm = None
+        self.normNdim = None
+        self.normPlist = None
+        self.dist = None
+        self.distNdim = None
+        self.distPlist = None
+        self.setNorm(norm, norm_ndim, norm_plist, normP)
 
         # ind_vars: Python list of strings.
         #   1+ Independent variables (predictors) entered in the regression.
@@ -67,12 +85,50 @@ class LinearRegression(analysis.Analysis):
         # p: int. Polynomial degree of regression model (Week 2)
         self.p = 1
 
+    def setNorm(self, norm: Norm, norm_ndim: Norm_ndim = None, norm_plist: Norm_plist = None,
+                normP: int | float = None):
+        self.normClass = setNorm.setNorm(norm, norm_ndim, norm_plist, normP)
+        self.normType = self.normClass.getNorm()
+        self.normP = self.normClass.getNormP()
+
+        self.norm = self.normClass.norm
+        self.normNdim = self.normClass.ndim_norm
+        self.normPlist = self.normClass.plist_norm
+        self.dist = self.normClass.pt_dist
+        self.distNdim = self.normClass.ndim_dist
+        self.distPlist = self.normClass.plist_dist
+
+
+    @staticmethod
+    def qr_decomp(A: np.ndarray, norm: setNorm):
+        """
+        Performs a QR decomposition of the matrix A.
+
+        :param A: ndarray, shape=(num_data_samps, num_ind_vars)
+                    Matrix for independent (predictor) variables in linear regression
+        :param norm: setNorm
+            The norm object to use for the QR decomposition.
+
+        :returns: tuple: (Q, R)
+            Q: ndarray, shape=(num_data_samps, num_data_samps)
+                Orthogonal matrix Q from the QR decomposition.
+            R: ndarray, shape=(num_data_samps, num_data_samps)
+                Upper triangular matrix R from the QR decomposition.
+        """
+        norm_f = norm.norm
+        orthonormal = A
+        for i in range(A.shape[1]):
+            for j in range(i):
+                orthonormal[:, i] -= np.dot(A[:, i], orthonormal[:, j]) * orthonormal[:, j]
+            orthonormal[:, i] /= norm_f(orthonormal[:, i])
+
+
     def linear_regression(self, ind_vars, dep_var):
         """
         Performs a linear regression on the independent (predictor) variable(s) `ind_vars`
         and dependent variable `dep_var.
 
-
+        :returns: tuple: (self.lin_opp, label_comp)
         self.lin_opp : LeftOperand
             The linear regression model as a LeftOperand object.
         label_comp : str
@@ -93,9 +149,6 @@ class LinearRegression(analysis.Analysis):
         # Select the data for the dependent and independent variables
         self.y = self.data.select_data([dep_var])
         self.A = self.data.select_data(ind_vars)
-        self.y = np.asfarray(self.y, dtype=float)
-        self.A = np.asfarray(self.A, dtype=float)
-
 
         # Add a column of ones to the independent variables matrix for the intercept term
         augA = np.hstack([np.ones((self.A.shape[0], 1)), self.A])
@@ -289,8 +342,8 @@ class LinearRegression(analysis.Analysis):
     # noinspection PyProtectedMember
     def scatter(self, ind_var: str | np.ndarray, dep_var: str | np.ndarray, title: str, operand: LeftOperand = None,
                 R2: float = None, reg_label: str = "Regression", residuals_on: bool = False,
-                residuals: np.ndarray = None, annotatePoints: np.ndarray = None,  fig_sz=(14, 12), colors=None,
-                alt_mode=False, fig: fig__.Figure = None, axes: plt.Axes = None):
+                residuals: np.ndarray = None,
+                fig_sz=(14, 12), colors=None, alt_mode=False, fig: fig__.Figure = None, axes: plt.Axes = None):
         """
         Creates a scatter plot with a regression line to visualize the model fit.
 
@@ -321,8 +374,6 @@ class LinearRegression(analysis.Analysis):
             If True, residuals will be plotted. Default is False.
         :param residuals: np.ndarray, optional
             A numpy array representing the residuals of the regression model. If None, residuals will be computed.
-        :param annotatePoints: np.ndarray, optional
-            A numpy array representing the points to annotate. Default is None.
         :param fig_sz: tuple, optional
             Size of the figure. Default is (14, 12).
         :param colors: list, optional
@@ -383,8 +434,6 @@ class LinearRegression(analysis.Analysis):
         x_data = x_data[sort]
         # Sort y_data according to x_data
         y_data = y_data[sort]
-        x_data = np.asfarray(x_data, dtype=float)
-        y_data = np.asfarray(y_data, dtype=float)
         # Get the maximum value of x_data
         x_max = np.max(x_data)
         # Get the minimum value of x_data
@@ -418,8 +467,6 @@ class LinearRegression(analysis.Analysis):
             axis.set_title(title)
             # Label determined by the title
             splitter = title.split(' by ')
-            if len(splitter) <= 1:
-                splitter = title.split(' vs. ')
             if len(splitter) > 1:
                 # If title contains "by", set the x-axis label to the first part of the title and the y-axis label to the second part
                 xSplit = splitter[0].split(' ')
@@ -434,12 +481,6 @@ class LinearRegression(analysis.Analysis):
             if R2 is not None:
                 # Set the title of the plot to the R^2 value
                 axis.set_title(f" R^2 = {R2:.2f}")
-        if annotatePoints is not None:
-            annotatePoints = annotatePoints.flatten()
-            # Annotate the points specified in annotatePoints
-            for i, row in enumerate(x_data):
-                for x_point in row:
-                    axis.annotate(str(annotatePoints[i]), (float(x_point), float(y_data.flatten()[i])))
         if residuals_on:
             if residuals is None:
                 # Predict the y values using the operand
@@ -492,12 +533,7 @@ class LinearRegression(analysis.Analysis):
             This is useful to change if your pair plot looks enormous or tiny in your notebook!
         :param hists_on_diag: bool
             If true, draw a histogram of the variable along main diagonal of pairplot.
-        :param reg_type: RegressTypes
-            Regression Type to Run
-        :param degree: int
-            Degree for regression, only relevant for some types
-        :param title: string
-            Title for the plot.
+
         """
         size = len(data_vars)
         figure = plt.figure(figsize=fig_sz, layout="compressed")
@@ -1037,7 +1073,8 @@ class LinearRegression(analysis.Analysis):
             Intercept for the linear regression fit
         p: int. Degree of polynomial regression model.
 
-        - Use parameters and call methods to set all instance variables defined in constructor.
+        TODO:
+        - Use parameters and call methods to set all instance variables defined in constructor. 
         """
         self.ind_vars = ind_vars
         self.dep_var = dep_var

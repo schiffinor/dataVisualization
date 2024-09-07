@@ -12,6 +12,10 @@ import analysis
 # Define a type for a function that takes two np.ndarrays and returns a scalar
 Norm = NewType("Norm", Callable[[np.ndarray, np.ndarray, ...], float])
 
+Norm_ndim = NewType("Norm_ndim", Callable[[np.ndarray, np.ndarray, ...], np.ndarray])
+
+Norm_plist = NewType("Norm_plist", Callable[[np.ndarray, np.ndarray, ...], np.ndarray])
+
 
 class KMeans:
     def __init__(self, data: np.ndarray = None):
@@ -94,7 +98,7 @@ class KMeans:
         return self.data_centroid_labels
 
     @staticmethod
-    def norm_validation(norm: Norm, normP: float = 2):
+    def norm_validation(norm: Norm, normP: float = 2) -> str:
         if norm is None:
             raise ValueError('norm cannot be None')
         if not callable(norm):
@@ -108,7 +112,7 @@ class KMeans:
                 pass
             else:
                 raise ValueError('norm must be one of l1_norm, l2_norm, l_inf_norm, or lp_norm')
-        pass
+        return norm.__name__[2]
 
     @staticmethod
     def dist_pt_to_pt(pt_1: np.ndarray, pt_2: np.ndarray = None, norm: Norm = analysis.Analysis.l2_norm,
@@ -140,7 +144,43 @@ class KMeans:
         if not callable(norm):
             raise ValueError('norm must be a callable function')
         KMeans.norm_validation(norm, normP)
-        return norm(pt_1, pt_2)
+        distance_mat = analysis.Analysis.lp_norm_v2_pList(pt_1[None, :], pt_2[None, :], normP, False)
+        return distance_mat.flatten().tolist()[0]
+
+
+    @staticmethod
+    def ndim_norm_choice(norm: Norm = analysis.Analysis.l2_norm, normP: float = 2) -> Norm_ndim:
+        """
+        Choose a norm function and call it with the appropriate arguments.
+        Utility function to help with cut down on duped code.
+        :param norm: staticmethod. A norm function to call.
+        :param normP: float. The p value for the norm function.
+
+        :return: Distance between arr1 and arr2 using the norm function.
+        """
+        KMeans.norm_validation(norm, normP)
+
+        norm_names = [analysis.Analysis.l1_norm.__name__,
+                      analysis.Analysis.l2_norm.__name__,
+                      analysis.Analysis.l_inf_norm.__name__,
+                      analysis.Analysis.l0_norm.__name__]
+        ndim_norms = [analysis.Analysis.l1_norm_ndim,
+                      analysis.Analysis.l2_norm_ndim,
+                      analysis.Analysis.l_inf_norm_ndim,
+                      analysis.Analysis.l0_norm_ndim]
+        ndim_norm_dic = dict(zip(norm_names, ndim_norms))
+        if norm.__name__ in norm_names:
+            ndim_norms = ndim_norm_dic[norm.__name__]
+            return ndim_norms
+        else:
+            if norm.__name__ == 'lp_norm':
+                if not isinstance(normP, int | float):
+                    raise ValueError('normP must be an integer or float')
+                if normP < 0:
+                    raise ValueError('normP must be greater than or equal to 0')
+                return analysis.Analysis.lp_norm_ndim
+            else:
+                raise ValueError('norm must be one of l1_norm, l2_norm, l_inf_norm, l0_norm, or lp_norm')
 
     @staticmethod
     def ndim_norm_choice_and_call(arr1: np.ndarray, arr2: np.ndarray,
@@ -167,28 +207,11 @@ class KMeans:
         if arr1.shape != arr2.shape:
             raise ValueError('arr1 and arr2 must have the same shape')
         KMeans.norm_validation(norm, normP)
+        normFunc = KMeans.ndim_norm_choice(norm, normP)
+        if normFunc == analysis.Analysis.lp_norm_ndim:
+            return normFunc(arr1, arr2, normP)
+        return normFunc(arr1, arr2)
 
-        norm_names = [analysis.Analysis.l1_norm.__name__,
-                      analysis.Analysis.l2_norm.__name__,
-                      analysis.Analysis.l_inf_norm.__name__,
-                      analysis.Analysis.l0_norm.__name__]
-        ndim_norms = [analysis.Analysis.l1_norm_ndim,
-                      analysis.Analysis.l2_norm_ndim,
-                      analysis.Analysis.l_inf_norm_ndim,
-                      analysis.Analysis.l0_norm_ndim]
-        ndim_norm_dic = dict(zip(norm_names, ndim_norms))
-        if norm.__name__ in norm_names:
-            ndim_norms = ndim_norm_dic[norm.__name__]
-            return ndim_norms(arr1, arr2)
-        else:
-            if norm.__name__ == 'lp_norm':
-                if not isinstance(normP, int | float):
-                    raise ValueError('normP must be an integer or float')
-                if normP < 0:
-                    raise ValueError('normP must be greater than or equal to 0')
-                return analysis.Analysis.lp_norm_ndim(arr1, arr2, normP)
-            else:
-                raise ValueError('norm must be one of l1_norm, l2_norm, l_inf_norm, l0_norm, or lp_norm')
 
     @staticmethod
     def dist_pt_to_pts(pt: np.ndarray, pts: np.ndarray,
@@ -225,8 +248,7 @@ class KMeans:
             raise ValueError('centroids and pt must have the same number of features')
         KMeans.norm_validation(norm, normP)
 
-        pt_arr = np.vstack([pt for _ in range(pts.shape[0])])
-        return KMeans.ndim_norm_choice_and_call(pt_arr, pts, norm, normP)
+        return analysis.Analysis.lp_norm_v2_pList(pt[None, :], pts, normP, False)
 
     def dist_pt_to_centroids(self, pt: np.ndarray, centroids: np.ndarray = None,
                              norm: Norm = analysis.Analysis.l2_norm,
@@ -288,10 +310,7 @@ class KMeans:
             raise ValueError('pts2 and pts must have the same number of features')
         KMeans.norm_validation(norm, normP)
 
-        pts_arr_list = [pts[i] for i in range(pts.shape[0]) for _ in range(pts2.shape[0])]
-        pts_arr = np.vstack(pts_arr_list)
-        pts2_arr = np.vstack([pts2 for _ in range(pts.shape[0])])
-        return KMeans.ndim_norm_choice_and_call(pts_arr, pts2_arr, norm, normP).reshape(pts.shape[0], pts2.shape[0])
+        return analysis.Analysis.lp_norm_v2_pList(pts[:, :], pts2, normP, False)
 
     def dist_pts_to_centroids(self, pts: np.ndarray = None, centroids: np.ndarray = None,
                               norm: Norm = analysis.Analysis.l2_norm,
@@ -715,8 +734,8 @@ class KMeans:
             raise ValueError('data_centroid_labels must be a 1D numpy array')
         if data_centroid_labels.shape[0] != data_.shape[0]:
             raise ValueError('data_centroid_labels must have the same number of samples as data_')
-        return np.mean(np.square(
-            KMeans.dist_pts_to_pts(data_, centroids)[np.arange(data_.shape[0]), data_centroid_labels]))
+        dists = KMeans.dist_pts_to_pts(data_, centroids)[np.arange(data_.shape[0]), data_centroid_labels]
+        return np.einsum("i,i->", dists, dists) / data_.shape[0]
 
     def compute_inertia(self) -> float:
         """
@@ -729,7 +748,7 @@ class KMeans:
 
 
     @staticmethod
-    def plot_clusters_static(data_: np.ndarray, labels: np.ndarray, k: int, x_label: str = None,
+    def plot_clusters_static(data_: np.ndarray, labels: np.ndarray, centroids: np.ndarray, k: int, x_label: str = None,
                              y_label: str = None, title: str = None) -> Tuple[plt.Figure, plt.Axes]:
         """
         Creates a scatter plot of the data color-coded by cluster assignment.
@@ -738,6 +757,8 @@ class KMeans:
             The dataset to be plotted.
         :param labels: ndarray of ints. shape=(num_samps,).
             Holds index of the assigned cluster of each data sample
+        :param centroids: ndarray. shape=(k, self.num_features).
+            Centroids for each cluster
         :param k: int.
             Number of clusters
         :param x_label: str.

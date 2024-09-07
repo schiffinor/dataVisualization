@@ -49,7 +49,7 @@ class Analysis:
             raise ValueError("Arrays must be 1D")
         if np.array_equal(a, b):
             return 0
-        return np.sum(np.abs(b - a), axis=0)
+        return np.einsum("i->", np.abs(b - a))
 
     @staticmethod
     def l1_norm_ndim(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -117,7 +117,7 @@ class Analysis:
             return Analysis.l2_norm(a, b)
         if p == np.inf:
             return Analysis.l_inf_norm(a, b)
-        if p < 1:
+        if p < 1 or not p.is_integer():
             return Analysis.lp_norm_alt(a, b, p)  # This is the only place where the alternative method is called
         p = int(p)
         if p < 0:
@@ -157,7 +157,7 @@ class Analysis:
             return Analysis.l2_norm_ndim(a, b)
         if p == np.inf:
             return Analysis.l_inf_norm_ndim(a, b)
-        if p < 1:
+        if p < 1 or not p.is_integer():
             return Analysis.lp_norm_alt_ndim(a, b, p)  # This is the only place where the alternative method is called
         p = int(p)
         if p < 0:
@@ -247,9 +247,13 @@ class Analysis:
             print(type(p))
             raise ValueError("p must be a float or an integer")
         pfloat = float(p)
-        inv_p = float(float(1) / pfloat)
-        med_array = arrayPrepper(a, b) if debug or p in {1, 2, 0, np.inf} or isinstance(p, int) or p.is_integer() else np.array([0])
-
+        inv_p = float(float(1) / pfloat) if p != 0 else np.inf
+        if debug or not (p in {1, 2, 0, np.inf} or isinstance(p, int) or p.is_integer()):
+            med_array = arrayPrepper(a, b)
+            array_made = True
+        else:
+            med_array = np.array([0])
+            array_made = False
         if p == np.inf:
             return spd.cdist(a, b, 'chebyshev') if not debug else np.max(med_array, axis=-1)
         elif p == 1:
@@ -270,22 +274,14 @@ class Analysis:
             if p == 2:
                 return np.sqrt(np.einsum(ein_string, *diff_copies))
             return np.float_power(np.einsum(ein_string, *diff_copies), inv_p)
-        elif p.as_integer_ratio()[0] == 1 and p.as_integer_ratio()[1] > 1:
+        elif not array_made:
+            med_array = arrayPrepper(a, b)
+        if p.as_integer_ratio()[0] == 1 and p.as_integer_ratio()[1] > 1:
             p_denom = p.as_integer_ratio()[1]
             ein_string = "...i," + ",".join(["...i" for _ in range(p_denom - 1)]) + "->..."
             post_med_array = np.float_power(med_array, p)
             diff_copies = [post_med_array for _ in range(p_denom)]
             return np.einsum(ein_string, *diff_copies)
-        elif pfloat.as_integer_ratio()[0] > 1 and pfloat.as_integer_ratio()[1] > 1:
-            p_num = pfloat.as_integer_ratio()[0]
-            p_denom = pfloat.as_integer_ratio()[1]
-            ein_string_denom = "...i," + ",".join(["...i" for _ in range(p_denom - 1)]) + "->...i"
-            ein_string_num = "...i," + ",".join(["...i" for _ in range(p_num - 1)]) + "->..."
-            med_array = np.float_power(med_array, 1.0 / float(p_denom))
-            diff_copy1 = [med_array for _ in range(p_num)]
-            post_med_array = np.einsum(ein_string_num, *diff_copy1)
-            diff_copies = [post_med_array for _ in range(p_denom)]
-            return np.float_power(np.einsum(ein_string_denom, *diff_copies), 1.0 / float(p_num))
         return np.float_power(np.einsum("...i->...", np.float_power(med_array, pfloat)), inv_p)
 
 
@@ -327,7 +323,7 @@ class Analysis:
             raise ValueError("Arrays must be 1D")
         if np.array_equal(a, b):
             return 0
-        return float(np.sum(np.abs(b - a) > 0, axis=0))
+        return float(np.einsum("i->", np.abs(b - a) > 0))
 
     @staticmethod
     def l0_norm_ndim(a: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -347,7 +343,7 @@ class Analysis:
             raise ValueError("Arrays must have the same shape")
         if np.array_equal(a, b):
             return np.zeros(a.shape[:-1])
-        return np.sum(np.abs(b - a) > 0, axis=-1)
+        return np.einsum("...i->...", np.abs(b - a) > 0)
 
     def set_data(self, data):
         """Method that re-assigns the instance variable `data` with the parameter.
