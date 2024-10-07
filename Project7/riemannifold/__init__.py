@@ -380,7 +380,7 @@ class coordDict:
         self.cSList.append(cS)
         if cS.name in self.__dict__:
             raise ValueError(f"coordDict has parameter {cS.name} already. Banned parameter names are: {self.__dict__}")
-        setattr(self, cS.name, cS)
+        setattr(self, str(cS.name), cS)
 
     def addCoordSys(self, fromName: str, toName: str, fromVars: List[sp.Symbol], transform: List[sp.Expr]) -> None:
         if not isinstance(fromVars, list):
@@ -523,9 +523,9 @@ class RiemannianManifold:
         self.name = name if name is not None else "M"
         self.pName = pName
         self.verbose = verbose
-        self.matrixParam = paramToSympy(variables, parameterization, latex=latex).tomatrix()
-        self.arrayParam = convert_matrix_to_array(self.matrixParam)
-        self.listParam = self.matrixParam.tolist()
+        self.listParam = paramToSympy(variables, parameterization, latex=latex)
+        self.matrixParam = sp.Matrix(self.listParam)
+        self.arrayParam = sp.Array(self.listParam)
         self.coordSysts = coordDict(self.patch, self.name)
         self.coordSysts.addCoordSys(self.name, "Euclidean", self.variables, self.listParam)
         if inverseParameterization is not None:
@@ -599,11 +599,9 @@ class RiemannianManifold:
         # Calculate the metric tensor
         metricTensor = RiemannianManifold.calculateMetricTensor(variables, parametrization)
 
-        # Calculate the inverse metric tensor
-        def inverseMetricTensor(mT: sp.Matrix) -> sp.Matrix:
-            return mT.inv()
+        inverseMetricTensor = metricTensor.tomatrix().inv()
 
-        return feedThroughArrMat(metricTensor, inverseMetricTensor)
+        return sp.Array(inverseMetricTensor.tolist())
 
     @staticmethod
     def calculateChristoffelSymbols(variables: List[sp.Symbol],
@@ -619,10 +617,22 @@ class RiemannianManifold:
         # Calculate the inverse metric tensor
         inverseMetricTensor = RiemannianManifold.calculateInverseMetricTensor(variables, parametrization)
         # Calculate the Christoffel Symbols
-        jacobian = RiemannianManifold.calculateJacobian(variables, parametrization)
-        metricTensor = RiemannianManifold.calculateMetricTensor(variables, parametrization)
-        inverseMetricTensor = RiemannianManifold.calculateInverseMetricTensor(variables, parametrization)
-        D_Jacobian = sp.derive_by_array(jacobian, variables)
+        J = np.array(RiemannianManifold.calculateJacobian(variables, parametrization))
+        g = np.array(RiemannianManifold.calculateMetricTensor(variables, parametrization))
+        g_inv = np.array(RiemannianManifold.calculateInverseMetricTensor(variables, parametrization))
+        D_J = np.array(sp.derive_by_array(J, variables))
+        print(f"D_J: {D_J}")
+        D_g = np.array(sp.derive_by_array(g, variables))
+        print(f"D_g: {D_g}")
+        R = np.array(sp.Array(np.einsum("ijk,jl->ikl", D_J, J)).simplify())
+        print(f"R: {R}")
+        f = (R + np.einsum("ijk->jik", R) + np.einsum("ijk->ikj", R) +
+             np.einsum("ijk->jki", R))
+        S = R - D_g
+        Christoffel = np.einsum("ijk,jl->lik", -S, g_inv)
+        Christoffel = np.array(sp.Array(Christoffel.tolist()).simplify())
+        print(f"Christoffel: {Christoffel}")
+        return Christoffel
 
     @staticmethod
     def calculateTensors(variables: List[str] | List[sp.Symbol],
@@ -664,58 +674,22 @@ class RiemannianManifold:
 
 # Testing
 if __name__ == "__main__":
-    pFN = paramToFn(["x", "y"], ["x**2", "y**2**2"], checker=True, simplify=True)
-    coordinates = [2, 2]
-    npCoordinates = np.array(coordinates)
-    print(f"pFN(2, 2): {pFN(coordinates)}")
-    print(f"pFN(2, 2) class: {type(pFN(coordinates))}")
-    print(f"pFN(np.array([2, 2])): {pFN(npCoordinates)}")
-    print(f"pFN(np.array([2, 2])) class: {type(pFN(npCoordinates))}")
-    x, y, z = sp.symbols("x y z")
-    i, j, k = sp.symbols("i j k")
-    param = sp.Array([sp.sin(x) * y, sp.cos(y) * x, sp.exp(z) * (x + y)])
-    print(f"param: {param}")
-    variables = [x, y, z]
-    print(f"variables: {variables}")
-    print(f"Jacobian: {RiemannianManifold.calculateJacobian(variables, param)}")
-    print(f"Metric Tensor: {RiemannianManifold.calculateMetricTensor(variables, param)}")
-    # print(f"Inverse Metric Tensor: {RiemannianManifold.calculateInverseMetricTensor(variables, param)}")
-    print(f"D_Jacobian: {sp.derive_by_array(RiemannianManifold.calculateJacobian(variables, param), variables)}")
-    mani = dg.Manifold("M", 3)
-    patch = dg.Patch("P", mani)
-    coords = dg.CoordSystem("coords", patch)
+    # Variables
+    var = ["u", "v", "z"]
+    # Parameters
+    param = ["a*cosh(u)*cos(v)", "a*sinh(u)*sin(v)", "z"]
+    # Riemannian Manifold
+    M = RiemannianManifold(3, var, param, verbose=True)
+    print("Variables: ")
+    print(M.variables)
+    print("Jacobian: ")
+    print(M.calculateJacobian(M.variables, M.arrayParam))
+    print("Metric Tensor: ")
+    print(M.calculateMetricTensor(M.variables, M.arrayParam))
+    print("Inverse Metric Tensor: ")
+    print(M.calculateInverseMetricTensor(M.variables, M.arrayParam))
+    # Christoffel Symbols
+    print("Christoffel Symbols: ")
 
-    r, theta, ci = sp.symbols('r theta ci', nonnegative=True)
+    print(M.calculateChristoffelSymbols(M.variables, M.arrayParam))
 
-    relation_dict = {
-
-        ('Car3D', 'Pol'): [(x, y, z), (sp.sin(x) * y, sp.cos(y) * x, sp.exp(z) * (x + y))],
-
-        ('Pol', 'Car3D'): [(r, theta, ci), (
-            r * sp.sin(theta) * ci, r * sp.cos(theta) * ci, r * sp.exp(ci) * (sp.sin(theta) + sp.cos(theta)))]
-
-    }
-
-    Car3D = dg.CoordSystem('Car3D', patch, (x, y, z), relation_dict)
-
-    Pol = dg.CoordSystem('Pol', patch, (r, theta, ci), relation_dict)
-
-    print(Car3D.transform(Pol, (x, y, z)))
-
-    print(Pol.transform(Car3D, (r, theta, ci)))
-
-    print(Car3D.jacobian(Pol))
-    sp.pprint(Car3D.jacobian(Pol), use_unicode=True)
-    sp.pprint(RiemannianManifold.calculateJacobian(variables, param), use_unicode=True)
-    sp.pprint(sp.simplify(Car3D.jacobian(Pol).T * Car3D.jacobian(Pol)), use_unicode=True)
-    sp.pprint(sp.simplify(RiemannianManifold.calculateMetricTensor(variables, param)), use_unicode=True)
-    compare = (RiemannianManifold.calculateMetricTensor(variables, param).tomatrix().equals(
-        sp.Array(sp.simplify(Car3D.jacobian(Pol).T * Car3D.jacobian(Pol)).tolist()).tomatrix()))
-    print(f"Compare: {compare}")
-    print(RiemannianManifold.calculateMetricTensor(variables, param).tomatrix())
-    print(sp.simplify(Car3D.jacobian(Pol).T * Car3D.jacobian(Pol)))
-    comparetwo = sp.simplify(RiemannianManifold.calculateMetricTensor(variables, param).tomatrix() - sp.simplify(
-        Car3D.jacobian(Pol).T * Car3D.jacobian(Pol)))
-    print(comparetwo)
-    if compare == 1:
-        print("Success!")
