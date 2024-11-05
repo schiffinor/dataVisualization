@@ -50,7 +50,7 @@ class NaiveBayes(Classifier):
         num_samps, num_features = data.shape
         N = y.shape[0]
         priors = np.zeros((self.num_classes,))
-        liklihood = np.zeros((self.num_classes, num_features))
+        likelihood = np.zeros((self.num_classes, num_features))
 
         for c in range(self.num_classes):
             priors[c] = np.count_nonzero(y == c) / N
@@ -58,10 +58,10 @@ class NaiveBayes(Classifier):
             data_class = data[index_class, :]
             total_word_count = np.sum(data_class)
             word_count = np.sum(data_class, axis=0)
-            liklihood[c] = (word_count + 1) / (total_word_count + num_features)
+            likelihood[c] = (word_count + 1) / (total_word_count + num_features)
 
         self.priors = np.log(priors)
-        self.likelihoods = np.log(liklihood)
+        self.likelihoods = np.log(likelihood)
 
 
     def predict(self, data):
@@ -87,11 +87,11 @@ class NaiveBayes(Classifier):
         NOTE: Remember that you are computing the LOG of the posterior (see notebook for equation).
         NOTE: The argmax function could be useful here.
         """
-        data = np.copy(data)
+        data = np.copy(data).astype(int)
         y_pred = np.zeros((data.shape[0],))
         for i in range(data.shape[0]):
             log_posterior = np.zeros((self.num_classes,))
             for c in range(self.num_classes):
-                log_posterior[c] = np.log(self.priors[c]) + np.sum(np.log(self.likelihoods[c]) * data[i])
+                log_posterior[c] = self.priors[c] + np.sum(self.likelihoods[c] * data[i])
             y_pred[i] = np.argmax(log_posterior)
         return y_pred.astype(int)

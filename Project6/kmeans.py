@@ -99,7 +99,7 @@ class KMeans:
             raise ValueError('norm cannot be None')
         if not callable(norm):
             raise ValueError('norm must be a callable function')
-        if norm.__name__ not in ['l1_norm', 'l2_norm', 'l_inf_norm']:
+        if norm.__name__ not in ['l1_norm', 'l2_norm', 'l_inf_norm', 'l0_norm']:
             if norm.__name__ == 'lp_norm':
                 if not isinstance(normP, int | float):
                     raise ValueError('normP must be an int or float')
@@ -170,10 +170,12 @@ class KMeans:
 
         norm_names = [analysis.Analysis.l1_norm.__name__,
                       analysis.Analysis.l2_norm.__name__,
-                      analysis.Analysis.l_inf_norm.__name__]
+                      analysis.Analysis.l_inf_norm.__name__,
+                      analysis.Analysis.l0_norm.__name__]
         ndim_norms = [analysis.Analysis.l1_norm_ndim,
                       analysis.Analysis.l2_norm_ndim,
-                      analysis.Analysis.l_inf_norm_ndim]
+                      analysis.Analysis.l_inf_norm_ndim,
+                      analysis.Analysis.l0_norm_ndim]
         ndim_norm_dic = dict(zip(norm_names, ndim_norms))
         if norm.__name__ in norm_names:
             ndim_norms = ndim_norm_dic[norm.__name__]
@@ -186,7 +188,7 @@ class KMeans:
                     raise ValueError('normP must be greater than or equal to 0')
                 return analysis.Analysis.lp_norm_ndim(arr1, arr2, normP)
             else:
-                raise ValueError('norm must be one of l1_norm, l2_norm, l_inf_norm, or lp_norm')
+                raise ValueError('norm must be one of l1_norm, l2_norm, l_inf_norm, l0_norm, or lp_norm')
 
     @staticmethod
     def dist_pt_to_pts(pt: np.ndarray, pts: np.ndarray,
