@@ -3,6 +3,7 @@ import scipy as scp
 import numpyProj as npP
 from typing import Tuple, List, Union, Dict, NewType, Callable, Any
 
+# Import custom modules and external libraries for specialized functions
 from Operands import *
 import warnings as wn
 import innerProduct as iP
@@ -23,6 +24,7 @@ import sympy.diffgeom.diffgeom as dg
 paramFN = NewType("paramFN", Callable[[Union[List[Union[int, float]], np.ndarray]], np.ndarray | sp.Array | sv.Vector])
 
 
+# Function that applies a matrix function to arrays by converting them to matrices first
 def feedThroughArrMat(arrays: sp.Array | List[sp.Array],
                       func: Callable[[Union[sp.Matrix, List[sp.Matrix]]], sp.Matrix] | Callable[
                           [Union[sp.Matrix, List[sp.Matrix]], ...], sp.Matrix],
@@ -588,20 +590,64 @@ class RiemannianManifold:
         return feedThroughArrMat(jacobiMatrix, metricTensor)
 
     @staticmethod
+    def metricTensorDirect(jacobian: sp.Array) -> sp.Array:
+        return feedThroughArrMat(jacobian, lambda jM: jM.T * jM)
+
+    @staticmethod
     def calculateInverseMetricTensor(variables: List[sp.Symbol],
-                                     parametrization: sp.Array, ) -> sp.Array:
+                                     parametrization: sp.Array,
+                                     metricTensor: sp.Array = None) -> sp.Array:
         """
         This function calculates the inverse metric tensor of a Riemannian manifold.
-        :param variables:
-        :param parametrization:
-        :return:
+        It now includes a test to compare the performance of SymPy and NumPy inversion methods.
+        :param metricTensor:
+        :param variables: List of symbolic variables.
+        :param parametrization: Parametrization of the manifold.
+        :return: Inverse metric tensor as a SymPy Array.
         """
-        # Calculate the metric tensor
-        metricTensor = RiemannianManifold.calculateMetricTensor(variables, parametrization)
+        import time
 
-        inverseMetricTensor = metricTensor.tomatrix().inv()
+        # Calculate the metric tensor
+        metricTensor = RiemannianManifold.calculateMetricTensor(variables, parametrization) if metricTensor is None else metricTensor
+
+        # Convert the metric tensor to both SymPy Matrix and NumPy array
+        numpy_array = np.array(metricTensor.tolist())
+        sympy_matrix = sp.Matrix(metricTensor.tolist())
+
+        # Time SymPy inversion
+        start_time_sympy = time.perf_counter()
+        sympy_inv = sympy_matrix.inv()
+        end_time_sympy = time.perf_counter()
+        sympy_time = end_time_sympy - start_time_sympy
+
+        print(f"SymPy inversion time: {sympy_time:.6f} seconds")
+
+        # Time NumPy inversion
+        start_time_numpy = time.perf_counter()
+        numpy_inv = numpy_array.inv()
+        end_time_numpy = time.perf_counter()
+        numpy_time = end_time_numpy - start_time_numpy
+
+        # Print inversion times
+
+        print(f"NumPy inversion time: {numpy_time:.6f} seconds")
+
+        # Optionally, compare inversion results
+        if sympy_inv.tolist() == numpy_inv.tolist():
+            print("Inversion results are identical.")
+        else:
+            print("Inversion results differ.")
+
+        # Use the inversion method you prefer (here, we use SymPy's inversion)
+        inverseMetricTensor = sympy_inv
 
         return sp.Array(inverseMetricTensor.tolist())
+
+
+    @staticmethod
+    def inverseMetricTensorDirect(metricTensor: sp.Array) -> sp.Array:
+        return sp.Array(metricTensor.tomatrix().inv().tolist()).simplify()
+
 
     @staticmethod
     def calculateChristoffelSymbols(variables: List[sp.Symbol],
@@ -612,27 +658,62 @@ class RiemannianManifold:
         :param parametrization:
         :return:
         """
-        # Calculate the metric tensor
-        metricTensor = RiemannianManifold.calculateMetricTensor(variables, parametrization)
-        # Calculate the inverse metric tensor
-        inverseMetricTensor = RiemannianManifold.calculateInverseMetricTensor(variables, parametrization)
-        # Calculate the Christoffel Symbols
+        """# Calculate the Christoffel Symbols
         J = np.array(RiemannianManifold.calculateJacobian(variables, parametrization))
         g = np.array(RiemannianManifold.calculateMetricTensor(variables, parametrization))
         g_inv = np.array(RiemannianManifold.calculateInverseMetricTensor(variables, parametrization))
         D_J = np.array(sp.derive_by_array(J, variables))
-        print(f"D_J: {D_J}")
+        # print(f"D_J: {D_J}")
         D_g = np.array(sp.derive_by_array(g, variables))
-        print(f"D_g: {D_g}")
+        # print(f"D_g: {D_g}")
         R = np.array(sp.Array(np.einsum("ijk,jl->ikl", D_J, J)).simplify())
-        print(f"R: {R}")
+        # print(f"R: {R}")
         f = (R + np.einsum("ijk->jik", R) + np.einsum("ijk->ikj", R) +
              np.einsum("ijk->jki", R))
         S = R - D_g
         Christoffel = np.einsum("ijk,jl->lik", -S, g_inv)
         Christoffel = np.array(sp.Array(Christoffel.tolist()).simplify())
-        print(f"Christoffel: {Christoffel}")
-        return Christoffel
+        # print(f"Christoffel: {Christoffel}")
+        return sp.Array(Christoffel.tolist())"""
+        # Calculate the Jacobian Matrix
+        jacobiMatrix = RiemannianManifold.calculateJacobian(variables, parametrization)
+        # Calculate the metric tensor
+        metricTensor = RiemannianManifold.metricTensorDirect(jacobiMatrix)
+        # Calculate the inverse metric tensor
+        inverseMetricTensor = RiemannianManifold.inverseMetricTensorDirect(metricTensor)
+        # Calculate the Christoffel Symbols
+        return RiemannianManifold.christoffelSymbolsDirect(variables, metricTensor, inverseMetricTensor)
+
+    @staticmethod
+    def christoffelSymbolsDirect(variables: List[sp.Symbol], metricTensor: sp.Array,
+                                 invMT: sp.Array = None) -> sp.Array:
+        if invMT is None:
+            invMT = RiemannianManifold.inverseMetricTensorDirect(metricTensor)
+        metricTensor = np.array(metricTensor)
+        invMT = np.array(invMT)
+        D_g = np.array(sp.derive_by_array(metricTensor, variables))
+        D_g_ijk = D_g
+        D_g_kij = np.einsum("ijk->kij", D_g)
+        D_g_jki = np.einsum("ijk->jki", D_g)
+        """ijkRef = np.array([[["uuu", "uuv", "uuz"], ["uvu", "uvv", "uvz"], ["uzu", "uzv", "uzz"]],
+                           [["vuu", "vuv", "vuz"], ["vvu", "vvv", "vvz"], ["vzu", "vzv", "vzz"]],
+                           [["zuu", "zuv", "zuz"], ["zvu", "zvv", "zvz"], ["zzu", "zzv", "zzz"]]])
+        kijRef = np.einsum("ijk->kij", ijkRef)
+        jkiRef = np.einsum("ijk->jki", ijkRef)
+
+        print(f"D_g_ijk: {D_g_ijk}")
+        print(f"D_g_kij: {D_g_kij}")
+        print(f"D_g_jki: {D_g_jki}")
+        print(f"ijkRef: {ijkRef}")
+        print(f"kijRef: {kijRef}")
+        print(f"jkiRef: {jkiRef}")
+        RRef = np.char.add(np.char.add(np.char.add(np.char.add(ijkRef, ' + '), kijRef), ' - '), jkiRef)"""
+        R = D_g_ijk + D_g_kij - D_g_jki
+        # print(f"R: {RRef}")
+        # print(f"R: {R}")
+        Christoffel = (1/2)*np.einsum("ijk,kl->kij", R, invMT)
+        # Christoffel = np.einsum("ijk->kij", Christoffel)
+        return sp.Array(Christoffel.tolist()).simplify()
 
     @staticmethod
     def calculateTensors(variables: List[str] | List[sp.Symbol],
@@ -664,7 +745,7 @@ class RiemannianManifold:
         else:
             raise ValueError("Parametrization must be a list of strings or a list of sympy expressions.")
         # Calculate the Jacobian Matrix
-        jacobiMatrix = sp.derive_by_array(params, variables)
+        jacobiMatrix = RiemannianManifold.calculateJacobian(variables, params)
         # Calculate the metric tensor
         metricTensor = jacobiMatrix.T @ jacobiMatrix
         # Calculate the inverse metric tensor
@@ -675,9 +756,17 @@ class RiemannianManifold:
 # Testing
 if __name__ == "__main__":
     # Variables
-    var = ["u", "v", "z"]
+    # var = ["r", "o", "u"]
+    # var = ["u", "v", "z"]
+    # var = ["x", "y", "z"]
+    var = ["u", "v", "w"]
     # Parameters
-    param = ["a*cosh(u)*cos(v)", "a*sinh(u)*sin(v)", "z"]
+    # param = ["r*sin(o)*cos(u)", "r*sin(o)*sin(u)", "r*cos(o)"]
+    # param = ["a*cosh(u)*cos(v)", "a*sinh(u)*sin(v)", "z"]
+    # param = ["cosh(x)*tanh(y)*e^z", "sinh(x)tanh(y)*ln(z)", "atan(z)*x*y"]
+    param = ["(a * sin(u) * cos(v) + b * cos(w)) * exp(u)",
+             "(a * sin(u) * sin(v) + b * sin(w)) * exp(v)",
+             "(a * cos(u) + c * w) * exp(w)"]
     # Riemannian Manifold
     M = RiemannianManifold(3, var, param, verbose=True)
     print("Variables: ")
@@ -685,11 +774,15 @@ if __name__ == "__main__":
     print("Jacobian: ")
     print(M.calculateJacobian(M.variables, M.arrayParam))
     print("Metric Tensor: ")
-    print(M.calculateMetricTensor(M.variables, M.arrayParam))
+    mt = M.calculateMetricTensor(M.variables, M.arrayParam)
+    print(mt)
+    print(sp.printing.mathematica_code(mt))
     print("Inverse Metric Tensor: ")
-    print(M.calculateInverseMetricTensor(M.variables, M.arrayParam))
+    invMT = M.calculateInverseMetricTensor(M.variables, M.arrayParam, mt)
+    print(invMT)
     # Christoffel Symbols
     print("Christoffel Symbols: ")
-
-    print(M.calculateChristoffelSymbols(M.variables, M.arrayParam))
+    christ = M.calculateChristoffelSymbols(M.variables, M.arrayParam)
+    print(christ)
+    print(sp.printing.mathematica_code(christ))
 
