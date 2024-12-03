@@ -594,6 +594,39 @@ class RiemannianManifold:
         return feedThroughArrMat(jacobian, lambda jM: jM.T * jM)
 
     @staticmethod
+    def recursive_inverse(Matrix: sp.Matrix) -> sp.Matrix:
+        n = Matrix.shape[0]
+
+        # Base case: 1x1 matrix
+        if n == 1:
+            return sp.Matrix([[1 / Matrix[0, 0]]])
+
+        # Partition the matrix into A, b, and c
+        A = Matrix[:-1, :-1]  # Top-left (n-1)x(n-1)
+        b = Matrix[:-1, -1]  # Last column (n-1)x1 (as a vector)
+        c = Matrix[-1, -1]   # Bottom-right scalar
+
+        # Recursively compute A^-1
+        A_inv = RiemannianManifold.recursive_inverse(A)
+
+        # Compute k = c - b.T * A^-1 * b
+        k = c - (b.T * A_inv * b)[0, 0]  # SymPy returns a matrix; extract scalar
+
+        if k == 0:
+            raise ValueError("Matrix is not invertible.")
+
+        # Compute the full inverse
+        top_left = A_inv + (1 / k) * (A_inv * b * b.T * A_inv)
+        top_right = -(1 / k) * (A_inv * b)
+        bottom_left = -(1 / k) * (b.T * A_inv)
+        bottom_right = sp.Matrix([[1 / k]])
+
+        # Assemble the full inverse
+        top = sp.Matrix.hstack(top_left, top_right)
+        bottom = sp.Matrix.hstack(bottom_left, bottom_right)
+        return sp.Matrix.vstack(top, bottom)
+
+    @staticmethod
     def calculateInverseMetricTensor(variables: List[sp.Symbol],
                                      parametrization: sp.Array,
                                      metricTensor: sp.Array = None) -> sp.Array:
@@ -608,7 +641,8 @@ class RiemannianManifold:
         import time
 
         # Calculate the metric tensor
-        metricTensor = RiemannianManifold.calculateMetricTensor(variables, parametrization) if metricTensor is None else metricTensor
+        metricTensor = RiemannianManifold.calculateMetricTensor(variables,
+                                                                parametrization) if metricTensor is None else metricTensor
 
         # Convert the metric tensor to both SymPy Matrix and NumPy array
         numpy_array = np.array(metricTensor.tolist())
@@ -616,11 +650,11 @@ class RiemannianManifold:
 
         # Time SymPy inversion
         start_time_sympy = time.perf_counter()
-        sympy_inv = sympy_matrix.inv()
+        sympy_inv = RiemannianManifold.recursive_inverse(sympy_matrix)
         end_time_sympy = time.perf_counter()
         sympy_time = end_time_sympy - start_time_sympy
 
-        print(f"SymPy inversion time: {sympy_time:.6f} seconds")
+        """print(f"SymPy inversion time: {sympy_time:.6f} seconds")
 
         # Time NumPy inversion
         start_time_numpy = time.perf_counter()
@@ -636,18 +670,17 @@ class RiemannianManifold:
         if sympy_inv.tolist() == numpy_inv.tolist():
             print("Inversion results are identical.")
         else:
-            print("Inversion results differ.")
+            print("Inversion results differ.")"""
+        print(f"SymPy inversion time: {sympy_time:.6f} seconds")
 
         # Use the inversion method you prefer (here, we use SymPy's inversion)
         inverseMetricTensor = sympy_inv
 
         return sp.Array(inverseMetricTensor.tolist())
 
-
     @staticmethod
     def inverseMetricTensorDirect(metricTensor: sp.Array) -> sp.Array:
         return sp.Array(metricTensor.tomatrix().inv().tolist()).simplify()
-
 
     @staticmethod
     def calculateChristoffelSymbols(variables: List[sp.Symbol],
@@ -711,7 +744,7 @@ class RiemannianManifold:
         R = D_g_ijk + D_g_kij - D_g_jki
         # print(f"R: {RRef}")
         # print(f"R: {R}")
-        Christoffel = (1/2)*np.einsum("ijk,kl->kij", R, invMT)
+        Christoffel = (1 / 2) * np.einsum("ijk,kl->kij", R, invMT)
         # Christoffel = np.einsum("ijk->kij", Christoffel)
         return sp.Array(Christoffel.tolist()).simplify()
 
@@ -756,17 +789,17 @@ class RiemannianManifold:
 # Testing
 if __name__ == "__main__":
     # Variables
-    # var = ["r", "o", "u"]
+    var = ["r", "o", "u"]
     # var = ["u", "v", "z"]
     # var = ["x", "y", "z"]
-    var = ["u", "v", "w"]
+    # var = ["u", "v", "w"]
     # Parameters
-    # param = ["r*sin(o)*cos(u)", "r*sin(o)*sin(u)", "r*cos(o)"]
+    param = ["r*sin(o)*cos(u)", "r*sin(o)*sin(u)", "r*cos(o)"]
     # param = ["a*cosh(u)*cos(v)", "a*sinh(u)*sin(v)", "z"]
     # param = ["cosh(x)*tanh(y)*e^z", "sinh(x)tanh(y)*ln(z)", "atan(z)*x*y"]
-    param = ["(a * sin(u) * cos(v) + b * cos(w)) * exp(u)",
+    """param = ["(a * sin(u) * cos(v) + b * cos(w)) * exp(u)",
              "(a * sin(u) * sin(v) + b * sin(w)) * exp(v)",
-             "(a * cos(u) + c * w) * exp(w)"]
+             "(a * cos(u) + c * w) * exp(w)"]"""
     # Riemannian Manifold
     M = RiemannianManifold(3, var, param, verbose=True)
     print("Variables: ")
@@ -785,4 +818,3 @@ if __name__ == "__main__":
     christ = M.calculateChristoffelSymbols(M.variables, M.arrayParam)
     print(christ)
     print(sp.printing.mathematica_code(christ))
-
