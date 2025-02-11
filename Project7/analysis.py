@@ -9,7 +9,7 @@ import warnings
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.spatial.distance as spd
-import numpyProj as npP
+import numpyProjBuilt.numpyProj as npP
 from dataClass import *
 
 

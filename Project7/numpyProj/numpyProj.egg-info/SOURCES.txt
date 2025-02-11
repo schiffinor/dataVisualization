@@ -1,8 +1,0 @@
-pyproject.toml
-setup.py
-numpyProj/__init__.py
-numpyProj/numpyProj.cpp
-numpyProj.egg-info/PKG-INFO
-numpyProj.egg-info/SOURCES.txt
-numpyProj.egg-info/dependency_links.txt
-numpyProj.egg-info/top_level.txt

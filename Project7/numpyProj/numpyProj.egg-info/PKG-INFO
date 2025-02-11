@@ -1,4 +1,0 @@
-Metadata-Version: 2.1
-Name: numpyProj
-Version: 1.0
-Summary: A Python package with a C++ extension for computing absolute differences using numpy
